@@ -3,9 +3,11 @@ import {
   IsDateString,
   IsEmail,
   IsInt,
+  IsOptional,
   IsString,
   Matches,
 } from 'class-validator';
+import { PaginationDTO } from 'src/shared/shared.dtos';
 
 export class GetAllUsersResponseDTO {
   @ApiProperty()
@@ -75,6 +77,28 @@ export class CreateUserRequestDTO {
   @ApiProperty({ description: 'Número' })
   @IsString()
   number!: string;
+}
+
+export class GetAllUsersFiltersDTO extends PaginationDTO {
+  @ApiProperty({ required: false, description: 'Filtrar por nome' })
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  @ApiProperty({ required: false, description: 'Filtrar por email' })
+  @IsEmail()
+  @IsOptional()
+  email?: string;
+
+  @ApiProperty({ required: false, description: 'Filtro data criação inicial' })
+  @IsDateString()
+  @IsOptional()
+  createdAt?: string;
+
+  @ApiProperty({ required: false, description: 'Filtro data criação final' })
+  @IsDateString()
+  @IsOptional()
+  createdAtEnd?: string;
 }
 
 export class GetUserResponseDTO extends GetAllUsersResponseDTO {}

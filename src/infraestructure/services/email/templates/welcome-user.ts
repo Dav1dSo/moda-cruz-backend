@@ -1,4 +1,4 @@
-export const welcomeUserTemplate = (name: string) => `
+export const welcomeUserTemplate = (name: string, verificationLink: string, year: number) => `
   <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -31,7 +31,7 @@ export const welcomeUserTemplate = (name: string) => `
             <td style="padding:40px; color:#111827;">
 
               <h2 style="margin-top:0; font-size:20px;">
-                Olá, {{name}} 👋
+                Olá, ${name}👋
               </h2>
 
               <p style="font-size:16px; line-height:24px; color:#4b5563;">
@@ -61,8 +61,8 @@ export const welcomeUserTemplate = (name: string) => `
               </p>
 
               <p style="font-size:14px; word-break:break-all;">
-                <a href="{{verificationLink}}" style="color:#2563eb;">
-                  {{verificationLink}}
+                <a href="${verificationLink}" style="color:#2563eb;">
+                  ${verificationLink}
                 </a>
               </p>
 
@@ -78,7 +78,7 @@ export const welcomeUserTemplate = (name: string) => `
           <!-- Footer -->
           <tr>
             <td style="background:#f9fafb; padding:20px; text-align:center; font-size:12px; color:#9ca3af;">
-              © {{year}} Sua Empresa. Todos os direitos reservados.
+              © ${year} Sua Empresa. Todos os direitos reservados.
             </td>
           </tr>
 

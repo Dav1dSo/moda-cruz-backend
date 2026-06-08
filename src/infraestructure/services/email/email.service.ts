@@ -13,11 +13,12 @@ export class EmailService {
     body: string, 
     emailFrom: string,
   ): Promise<void> {
+
     await sgMail.send({
       to,
       from: emailFrom,
       subject,
-      text: body,
+      html: body,
     });
   }
 }

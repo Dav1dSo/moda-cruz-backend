@@ -1,8 +1,6 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
-  Logger,
 } from '@nestjs/common';
 import { CreateUserRequestDTO } from './dtos/users.dto';
 import { PrismaService } from 'src/infraestructure/services/database/prisma.service';
@@ -10,14 +8,14 @@ import { EmailService } from 'src/infraestructure/services/email/email.service';
 import { welcomeUserTemplate } from 'src/infraestructure/services/email/templates/welcome-user';
 
 @Injectable()
-export class UsersService {
+export class UsersServiceCreate {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly emailService: EmailService,
   ) {}
 
 
-  async create(req: CreateUserRequestDTO): Promise<void> {
+  async execute(req: CreateUserRequestDTO): Promise<void> {
     try {
       if (
         await this.prismaService.user.findUnique({
@@ -52,7 +50,7 @@ export class UsersService {
       await this.emailService.sendEmail(
         req.email,
         'Bem-vindo ao nosso serviço',
-        welcomeUserTemplate(req.name),
+        welcomeUserTemplate(req.name, '/verify-email', new Date().getFullYear()),
         process.env.EMAIL_FROM || '',
       );
       
