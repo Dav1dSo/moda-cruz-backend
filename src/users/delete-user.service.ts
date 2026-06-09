@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/infraestructure/services/database/prisma.service";
 import { ResponseDefaultDTO } from "src/shared/shared.dtos";
 
@@ -7,11 +7,16 @@ export class UserServiceDelete {
     constructor(private readonly prismaService: PrismaService) {}
 
     async execute(id: number): Promise<ResponseDefaultDTO> {
-        await this.prismaService.user.delete({
+        const get_user = await this.prismaService.user.delete({
             where: {
                 id: id,
             },
         });
+
+        if (get_user === null) {
+            throw new NotFoundException('Usuário inválido!');
+        }
+
         return {
             message: 'User deleted successfully',
         };

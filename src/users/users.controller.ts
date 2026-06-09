@@ -10,16 +10,14 @@ import {
 } from '@nestjs/common';
 import {
   CreateUserRequestDTO,
-  GetAllUsersFiltersDTO,
-  GetAllUsersResponseDTO,
-  GetUserResponseDTO,
-} from './dtos/users.dto';
+} from './dtos/request/user-request';
 import { ResponseDefaultDTO } from '../shared/shared.dtos';
 import { UsersServiceCreate } from './create-users.service';
 import { UserServiceGetAll } from './getall-users.service';
 import { FindUserService } from './find-user.service';
 import { ApiParam } from '@nestjs/swagger';
 import { UserServiceDelete } from './delete-user.service';
+import { GetAllUsersFiltersDTO, GetAllUsersResponseDTO, GetUserResponseDTO } from './dtos/response/user-response';
 
 @Controller('users')
 export class UsersController {
