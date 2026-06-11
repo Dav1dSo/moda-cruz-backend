@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthLoginService } from './login-service';
+import { AuthLoginService } from './login.service';
 import { AuthController } from './auth.controller';
-import { AuthRefreshTokenService } from './refresh-token-service';
+import { AuthRefreshTokenService } from './refresh-token.service';
+import { ResetPasswordService } from './reset-password.service';
+import { ConfirmResetPassword } from './confirm-reset-password.service';
 
 @Module({
   imports: [
@@ -14,6 +16,11 @@ import { AuthRefreshTokenService } from './refresh-token-service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthLoginService, AuthRefreshTokenService],
+  providers: [
+    AuthLoginService,
+    AuthRefreshTokenService,
+    ResetPasswordService,
+    ConfirmResetPassword,
+  ],
 })
 export class AuthhModule {}

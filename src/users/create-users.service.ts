@@ -2,7 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateUserRequestDTO } from './dtos/request/user-request';
 import { PrismaService } from 'src/infraestructure/services/database/prisma.service';
 import { EmailService } from 'src/infraestructure/services/email/email.service';
-import { welcomeUserTemplate } from 'src/infraestructure/services/email/templates/welcome-user';
+import { welcomeUserTemplate } from 'src/infraestructure/services/email/templates/welcome-user-template-email';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()

@@ -11,7 +11,7 @@ export class EmailService {
     to: string,
     subject: string,
     body: string, 
-    emailFrom: string,
+    emailFrom: string = process.env.EMAIL_FROM!,
   ): Promise<void> {
 
     await sgMail.send({
