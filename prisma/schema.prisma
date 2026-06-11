@@ -15,7 +15,7 @@ model User {
   telefone String
   address_id Int @unique
   address Address? @relation(fields: [address_id], references: [id])
-
+  profiles UserProfile[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -40,5 +40,50 @@ model Address {
 
 }
 
+model Profile {
+  id        String   @id @default(cuid())
+  name      String
+  active    Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users      UserProfile[]
+  permissions ProfilePermission[]
+}
 
 
+model Permission {
+  id        String   @id @default(cuid())
+  slug      String   @unique // ex: users.read, users.delete
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profiles  ProfilePermission[]
+  
+}
+
+model ProfilePermission {
+  id           String @id @default(cuid())
+
+  profileId    String
+  permissionId String
+
+  profile      Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, permissionId])
+}
+
+model UserProfile {
+  id        String @id @default(cuid())
+
+  userId    Int
+  profileId String
+
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, profileId])
+}

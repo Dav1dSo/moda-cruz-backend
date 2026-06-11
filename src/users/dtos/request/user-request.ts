@@ -61,3 +61,41 @@ export class CreateUserRequestDTO {
 }
 
 
+export class UpdateUserRequestDTO {
+  @ApiProperty({ description: 'Endereço de email válido' })
+  @IsEmail()
+  email!: string;
+
+  @ApiProperty({ description: 'Nome completo' })
+  @IsString()
+  @Matches(/^[A-Za-zÀ-ÿ\s]+$/)
+  name!: string;
+
+  @ApiProperty({ description: 'Número de telefone válido' })
+  @IsString()
+  telefone!: string;
+
+  @ApiProperty({ description: 'Rua' })
+  @IsString()
+  street!: string;
+
+  @ApiProperty({ description: 'Cidade' })
+  @IsString()
+  city!: string;
+
+  @ApiProperty({ description: 'Estado' })
+  @IsString()
+  state!: string;
+
+  @ApiProperty({ description: 'CEP' })
+  @IsString()
+  zipCode!: string;
+
+  @ApiProperty({ description: 'País' })
+  @IsString()
+  country!: string;
+
+  @ApiProperty({ description: 'Número' })
+  @IsString()
+  number!: string;
+}

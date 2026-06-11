@@ -5,6 +5,7 @@ import { AuthController } from './auth.controller';
 import { AuthRefreshTokenService } from './refresh-token.service';
 import { ResetPasswordService } from './reset-password.service';
 import { ConfirmResetPassword } from './confirm-reset-password.service';
+import { AuthLoginrequired } from './guards/auth.guard';
 
 @Module({
   imports: [
@@ -21,6 +22,8 @@ import { ConfirmResetPassword } from './confirm-reset-password.service';
     AuthRefreshTokenService,
     ResetPasswordService,
     ConfirmResetPassword,
+    AuthLoginrequired
   ],
+  exports: [JwtModule, AuthLoginrequired]
 })
-export class AuthhModule {}
+export class AuthModule {}
