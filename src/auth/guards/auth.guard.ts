@@ -20,8 +20,6 @@ export class AuthLoginrequired implements CanActivate {
 
     const authHeader = req.headers.authorization;
 
-    console.log(authHeader)
-
     if (!authHeader) {
       throw new UnauthorizedException('Usuário deve estar logado');
     }

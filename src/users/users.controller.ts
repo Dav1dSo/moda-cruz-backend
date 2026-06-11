@@ -48,6 +48,9 @@ export class UsersController {
     return await this.userServiceGetAll.execute(filters);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthLoginrequired)
+  @Permissions('user.create')
   @Post()
   async create(
     @Body() userData: CreateUserRequestDTO,
@@ -58,6 +61,9 @@ export class UsersController {
     };
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthLoginrequired)
+  @Permissions('user.read')
   @ApiParam({
     name: 'id',
     type: Number,
@@ -71,6 +77,9 @@ export class UsersController {
     return await this.userServiceFind.execute(id);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthLoginrequired)
+  @Permissions('user.update')
   @Post()
   async aupdateUser(
     @Param(':id', ParseIntPipe) user_id: number,
@@ -79,6 +88,9 @@ export class UsersController {
     return await this.userServiceUpdate.execute(req, user_id);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthLoginrequired)
+  @Permissions('user.delete')
   @ApiParam({
     name: 'id',
     type: Number,
