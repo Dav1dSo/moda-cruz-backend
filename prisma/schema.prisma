@@ -41,10 +41,9 @@ model Address {
 }
 
 model Profile {
-  id        String   @id @default(cuid())
+  id      Int    @id @default(autoincrement())
   name      String
   active    Boolean  @default(true)
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -54,9 +53,8 @@ model Profile {
 
 
 model Permission {
-  id        String   @id @default(cuid())
-  slug      String   @unique // ex: users.read, users.delete
-
+  id      Int    @id @default(autoincrement())
+  slug      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -65,10 +63,9 @@ model Permission {
 }
 
 model ProfilePermission {
-  id           String @id @default(cuid())
-
-  profileId    String
-  permissionId String
+  id      Int    @id @default(autoincrement())
+  profileId    Int
+  permissionId Int
 
   profile      Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
@@ -77,10 +74,9 @@ model ProfilePermission {
 }
 
 model UserProfile {
-  id        String @id @default(cuid())
-
+  id      Int    @id @default(autoincrement())
   userId    Int
-  profileId String
+  profileId Int
 
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)

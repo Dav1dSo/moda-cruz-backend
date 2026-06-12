@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UpdateUserRequestDTO } from './dtos/request/user-request';
 import { PrismaService } from 'src/infraestructure/services/database/prisma.service';
 import { ResponseDefaultDTO } from 'src/shared/shared.dtos';
@@ -21,6 +25,21 @@ export class UserServiceUpdate {
         throw new NotFoundException('Usuário não encontrado');
       }
 
+      const userExists = await this.prismaService.user.findFirst({
+        where: {
+          NOT: {
+            id: user_id,
+          },
+          OR: [{ email: req.email }, { telefone: req.telefone }],
+        },
+      });
+
+      if (userExists) {
+        throw new BadRequestException(
+          'Email, CPF ou telefone já estão cadastrados.',
+        );
+      }
+
       await this.prismaService.user.update({
         where: { id: user_id },
         data: {
@@ -41,7 +60,7 @@ export class UserServiceUpdate {
         },
       });
 
-      return { message: "Update successful."};
+      return { message: 'Update successful.' };
     } catch (error) {
       throw error;
     }

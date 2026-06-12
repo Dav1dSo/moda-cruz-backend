@@ -25,7 +25,7 @@ import {
   GetUserResponseDTO,
 } from './dtos/response/user-response';
 import { UserServiceUpdate } from './update-user.service';
-import { AuthLoginrequired } from 'src/auth/guards/auth.guard';
+import { AuthLoginRequired } from 'src/auth/guards/auth.guard';
 import { Permissions } from 'src/auth/decorators/permissions-decorator';
 
 @Controller('users')
@@ -39,7 +39,7 @@ export class UsersController {
   ) {}
 
   @ApiBearerAuth()
-  @UseGuards(AuthLoginrequired)
+  @UseGuards(AuthLoginRequired)
   @Permissions('user.read')
   @Get()
   async findAll(
@@ -49,7 +49,7 @@ export class UsersController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthLoginrequired)
+  @UseGuards(AuthLoginRequired)
   @Permissions('user.create')
   @Post()
   async create(
@@ -62,7 +62,7 @@ export class UsersController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthLoginrequired)
+  @UseGuards(AuthLoginRequired)
   @Permissions('user.read')
   @ApiParam({
     name: 'id',
@@ -78,7 +78,7 @@ export class UsersController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthLoginrequired)
+  @UseGuards(AuthLoginRequired)
   @Permissions('user.update')
   @Post()
   async aupdateUser(
@@ -89,7 +89,7 @@ export class UsersController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthLoginrequired)
+  @UseGuards(AuthLoginRequired)
   @Permissions('user.delete')
   @ApiParam({
     name: 'id',
