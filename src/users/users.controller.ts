@@ -80,7 +80,7 @@ export class UsersController {
   @ApiBearerAuth()
   @UseGuards(AuthLoginRequired)
   @Permissions('user.update')
-  @Post()
+  @Post('/update')
   async aupdateUser(
     @Param(':id', ParseIntPipe) user_id: number,
     @Body() req: UpdateUserRequestDTO,

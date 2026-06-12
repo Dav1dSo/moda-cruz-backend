@@ -3,8 +3,9 @@ import { Module } from '@nestjs/common';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ProfileModule } from './profile/profile.module';
+import { PermissionsModule } from './permissions/permissions.module';
 
 @Module({
-  imports: [AuthModule, SharedModule, UsersModule, ProfileModule],
+  imports: [AuthModule, SharedModule, UsersModule, ProfileModule, PermissionsModule],
 })
 export class AppModule {}
