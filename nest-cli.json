@@ -1,8 +1,59 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
+  "sourceRoot": "apps/api-gateway/src",
   "compilerOptions": {
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/api-gateway/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/api-gateway",
+  "projects": {
+    "api-gateway": {
+      "type": "application",
+      "root": "apps/api-gateway",
+      "entryFile": "main",
+      "sourceRoot": "apps/api-gateway/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/api-gateway/tsconfig.app.json"
+      }
+    },
+    "database": {
+      "type": "library",
+      "root": "libs/database",
+      "entryFile": "index",
+      "sourceRoot": "libs/database/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/database/tsconfig.lib.json"
+      }
+    },
+    "notification": {
+      "type": "library",
+      "root": "libs/notification",
+      "entryFile": "index",
+      "sourceRoot": "libs/notification/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/notification/tsconfig.lib.json"
+      }
+    },
+    "people-service": {
+      "type": "application",
+      "root": "apps/people-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/people-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/people-service/tsconfig.app.json"
+      }
+    },
+    "rabbitmq": {
+      "type": "library",
+      "root": "libs/rabbitmq",
+      "entryFile": "index",
+      "sourceRoot": "libs/rabbitmq/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/rabbitmq/tsconfig.lib.json"
+      }
+    }
   }
 }
