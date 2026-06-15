@@ -7,80 +7,756 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id       Int    @id @default(autoincrement())
-  name     String
-  email    String @unique
-  password String
-  telefone String
-  address_id Int @unique
-  address Address? @relation(fields: [address_id], references: [id])
-  profiles UserProfile[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([email])
-  @@index([telefone])
+enum entity_type {
+  PESSOA_FISICA
+  PESSOA_JURIDICA
 }
 
-model Address {
-  id      Int    @id @default(autoincrement())
-  street  String
-  city    String
-  state   String
-  zipCode String
-  country String
-  number  String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User?
-
+enum entity_status {
+  ATIVO
+  INATIVO
+  SUSPENSO
+  FALECIDO
 }
 
-model Profile {
-  id      Int    @id @default(autoincrement())
-  name      String
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  users      UserProfile[]
-  permissions ProfilePermission[]
+enum entity_role_type {
+  MEMBRO
+  FORNECEDOR
+  CLIENTE
+  FUNCIONARIO
+  PASTOR
+  VOLUNTARIO
+  BENEFICIARIO
+  DOADOR
+  VISITANTE
+  COLABORADOR
 }
 
-
-model Permission {
-  id      Int    @id @default(autoincrement())
-  name      String   @unique
-  slug      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  profiles  ProfilePermission[]
-  
+enum entity_role_status {
+  ATIVO
+  INATIVO
+  SUSPENSO
 }
 
-model ProfilePermission {
-  id      Int    @id @default(autoincrement())
-  profileId    Int
-  permissionId Int
-
-  profile      Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-
-  @@unique([profileId, permissionId])
+enum gender {
+  MASCULINO
+  FEMININO
+  OUTRO
 }
 
-model UserProfile {
-  id      Int    @id @default(autoincrement())
-  userId    Int
-  profileId Int
+enum marital_status {
+  SOLTEIRO
+  CASADO
+  DIVORCIADO
+  VIUVO
+  SEPARADO
+}
 
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+enum blood_type {
+  A_POSITIVO
+  A_NEGATIVO
+  B_POSITIVO
+  B_NEGATIVO
+  AB_POSITIVO
+  AB_NEGATIVO
+  O_POSITIVO
+  O_NEGATIVO
+}
 
-  @@unique([userId, profileId])
+enum company_size {
+  MEI
+  MICRO
+  PEQUENA
+  MEDIA
+  GRANDE
+}
+
+enum entity_document_type {
+  RG
+  CNH
+  PASSAPORTE
+  CARTEIRA_TRABALHO
+  CERTIFICADO_MILITAR
+  TITULO_ELEITOR
+  CERTIDAO_NASCIMENTO
+  CERTIDAO_CASAMENTO
+  COMPROVANTE_RESIDENCIA
+  EXTRATO_BANCARIO
+  COMPROVANTE_RENDA
+  CONTRATO
+  CERTIFICADO_ESCOLAR
+  OUTRO
+}
+
+enum contact_type {
+  EMAIL
+  CELULAR
+  TELEFONE
+  WHATSAPP
+  TELEGRAM
+  FAX
+  OUTRO
+}
+
+enum education_level {
+  FUNDAMENTAL
+  MEDIO
+  TECNICO
+  GRADUACAO
+  POS_GRADUACAO
+  MESTRADO
+  DOUTORADO
+}
+
+enum education_status {
+  EM_ANDAMENTO
+  COMPLETO
+  INCOMPLETO
+  SUSPENSO
+}
+
+enum user_status_change_type {
+  ATIVADO
+  DESATIVADO
+}
+
+// ===== MODULE: GEOGRAPHY AND ADDRESS =====
+
+model country {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(100)
+  code       String?  @unique @db.Char(3)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  states        state[]
+  nationalities nationality[]
+}
+
+model state {
+  id         Int      @id @default(autoincrement())
+  country_id Int
+  name       String   @db.VarChar(100)
+  code       String?  @db.Char(2)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  country country @relation(fields: [country_id], references: [id], onDelete: Restrict)
+  cities  city[]
+
+  @@unique([country_id, code])
+  @@index([country_id])
+}
+
+model city {
+  id         Int      @id @default(autoincrement())
+  state_id   Int
+  name       String   @db.VarChar(150)
+  ibge_code  String?  @unique @db.VarChar(10)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  state         state            @relation(fields: [state_id], references: [id], onDelete: Restrict)
+  addresses     address[]
+  birth_records natural_person[] @relation("BirthCity")
+
+  @@index([state_id, name])
+}
+
+model address {
+  id           Int      @id @default(autoincrement())
+  city_id      Int
+  postal_code  String?  @db.Char(8)
+  street       String   @db.VarChar(255)
+  number       String?  @db.VarChar(20)
+  complement   String?  @db.VarChar(255)
+  neighborhood String?  @db.VarChar(100)
+  latitude     Decimal? @db.Decimal(10, 7)
+  longitude    Decimal? @db.Decimal(10, 7)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  city         city          @relation(fields: [city_id], references: [id], onDelete: Restrict)
+  organization organization?
+  congregation congregation?
+  entity       entity?
+
+  @@index([city_id])
+  @@index([postal_code])
+}
+
+model nationality {
+  id         Int      @id @default(autoincrement())
+  country_id Int?
+  name       String   @unique @db.VarChar(100)
+  gentile    String?  @db.VarChar(100)
+  iso_code   String?  @db.Char(3)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  country         country?         @relation(fields: [country_id], references: [id], onDelete: SetNull)
+  natural_persons natural_person[]
+
+  @@index([country_id])
+}
+
+model occupation {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique @db.VarChar(150)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  professions person_profession[]
+}
+
+// ===== MODULE: ORGANIZATION AND CONGREGATION =====
+
+model organization {
+  id                     Int       @id @default(autoincrement())
+  address_id             Int?      @unique
+  cnpj                   String    @unique @db.Char(14)
+  legal_name             String    @db.VarChar(255)
+  trade_name             String?   @db.VarChar(255)
+  state_registration     String?   @db.VarChar(50)
+  municipal_registration String?   @db.VarChar(50)
+  foundation_date        DateTime? @db.Date
+  is_active              Boolean   @default(true)
+  notes                  String?
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+  deleted_at             DateTime?
+
+  address          address?                   @relation(fields: [address_id], references: [id], onDelete: Restrict)
+  areas            congregation_area[]
+  sectors          congregation_sector[]
+  congregations    congregation[]
+  entities         entity[]
+  user_accesses    user_organization[]
+  profiles         profile[]
+  member_statuses  member_status[]
+  member_roles     congregation_member_role[]
+  church_positions ecclesiastical_position[]
+  entity_roles     entity_role[]
+
+  @@index([is_active])
+  @@index([deleted_at])
+}
+
+model congregation_area {
+  id              Int       @id @default(autoincrement())
+  organization_id Int
+  name            String    @db.VarChar(150)
+  description     String?
+  is_active       Boolean   @default(true)
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+  deleted_at      DateTime?
+
+  organization  organization          @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  sectors       congregation_sector[]
+  congregations congregation[]
+
+  @@unique([organization_id, name])
+  @@unique([id, organization_id])
+  @@index([organization_id, is_active])
+}
+
+model congregation_sector {
+  id              Int       @id @default(autoincrement())
+  organization_id Int
+  area_id         Int
+  name            String    @db.VarChar(150)
+  description     String?
+  is_active       Boolean   @default(true)
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+  deleted_at      DateTime?
+
+  organization  organization      @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  area          congregation_area @relation(fields: [area_id], references: [id], onDelete: Restrict)
+  congregations congregation[]
+
+  @@unique([organization_id, name])
+  @@unique([id, organization_id])
+  @@index([organization_id, area_id])
+}
+
+model congregation {
+  id                          Int       @id @default(autoincrement())
+  organization_id             Int
+  parent_id                   Int?
+  area_id                     Int?
+  sector_id                   Int?
+  address_id                  Int?      @unique
+  pastor_entity_id            Int?
+  name                        String    @db.VarChar(255)
+  acronym                     String?   @db.VarChar(50)
+  description                 String?
+  cnpj                        String?   @unique @db.Char(14)
+  foundation_date             DateTime? @db.Date
+  population_capacity         Int?
+  phone                       String?   @db.VarChar(11)
+  email                       String?   @db.VarChar(255)
+  logo_path                   String?   @db.VarChar(500)
+  public_checkout_token       String?   @unique @db.VarChar(64)
+  is_public_checkout_enabled  Boolean   @default(false)
+  checkout_token_generated_at DateTime?
+  is_active                   Boolean   @default(true)
+  created_at                  DateTime  @default(now())
+  updated_at                  DateTime  @updatedAt
+  deleted_at                  DateTime?
+
+  organization                    organization                     @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  parent                          congregation?                    @relation("CongregationHierarchy", fields: [parent_id], references: [id], onDelete: SetNull)
+  children                        congregation[]                   @relation("CongregationHierarchy")
+  area                            congregation_area?               @relation(fields: [area_id, organization_id], references: [id, organization_id])
+  sector                          congregation_sector?             @relation(fields: [sector_id, organization_id], references: [id, organization_id])
+  address                         address?                         @relation(fields: [address_id], references: [id], onDelete: Restrict)
+  pastor                          entity?                          @relation("CongregationPastor", fields: [pastor_entity_id], references: [id], onDelete: SetNull)
+  user_accesses                   user_organization[]
+  entity_roles                    entity_role[]
+  member_ecclesiastical_positions member_ecclesiastical_position[]
+
+  @@unique([organization_id, name])
+  @@unique([id, organization_id])
+  @@index([organization_id, is_active])
+  @@index([area_id])
+  @@index([sector_id])
+  @@index([parent_id])
+}
+
+// ===== MODULE: ENTITY =====
+
+model entity {
+  id              Int           @id @default(autoincrement())
+  organization_id Int
+  address_id      Int?          @unique
+  type            entity_type
+  display_name    String        @db.VarChar(255)
+  status          entity_status @default(ATIVO)
+  notes           String?
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+  deleted_at      DateTime?
+
+  organization             organization                     @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  address                  address?                         @relation(fields: [address_id], references: [id], onDelete: Restrict)
+  natural_person           natural_person?
+  legal_person             legal_person?
+  contacts                 entity_contact[]
+  documents                entity_document[]
+  roles                    entity_role[]
+  professions              person_profession[]
+  educations               person_education[]
+  user                     user?
+  pastor_of                congregation[]                   @relation("CongregationPastor")
+  ecclesiastical_positions member_ecclesiastical_position[]
+
+  @@index([organization_id, type])
+  @@index([organization_id, display_name])
+  @@index([status])
+  @@index([deleted_at])
+}
+
+model natural_person {
+  id                     Int             @id @default(autoincrement())
+  entity_id              Int             @unique
+  nationality_id         Int?
+  birth_city_id          Int?
+  full_name              String          @db.VarChar(255)
+  cpf                    String?         @unique @db.Char(11)
+  rg                     String?         @db.VarChar(20)
+  rg_issuer              String?         @db.VarChar(100)
+  rg_issue_date          DateTime?       @db.Date
+  birth_date             DateTime?       @db.Date
+  gender                 gender?
+  marital_status         marital_status?
+  spouse_name            String?         @db.VarChar(255)
+  blood_type             blood_type?
+  father_name            String?         @db.VarChar(255)
+  mother_name            String?         @db.VarChar(255)
+  has_disability         Boolean         @default(false)
+  disability_type        String?         @db.VarChar(150)
+  disability_description String?
+  photo_path             String?         @db.VarChar(500)
+  created_at             DateTime        @default(now())
+  updated_at             DateTime        @updatedAt
+
+  entity      entity       @relation(fields: [entity_id], references: [id], onDelete: Restrict)
+  nationality nationality? @relation(fields: [nationality_id], references: [id], onDelete: SetNull)
+  birth_city  city?        @relation("BirthCity", fields: [birth_city_id], references: [id], onDelete: SetNull)
+
+  @@index([full_name])
+  @@index([birth_date])
+}
+
+model legal_person {
+  id                     Int           @id @default(autoincrement())
+  entity_id              Int           @unique
+  legal_name             String        @db.VarChar(255)
+  trade_name             String?       @db.VarChar(255)
+  cnpj                   String?       @unique @db.Char(14)
+  state_registration     String?       @db.VarChar(50)
+  municipal_registration String?       @db.VarChar(50)
+  constitution_date      DateTime?     @db.Date
+  company_size           company_size?
+  legal_nature           String?       @db.VarChar(100)
+  logo_path              String?       @db.VarChar(500)
+  created_at             DateTime      @default(now())
+  updated_at             DateTime      @updatedAt
+
+  entity entity @relation(fields: [entity_id], references: [id], onDelete: Restrict)
+
+  @@index([legal_name])
+  @@index([trade_name])
+}
+
+model entity_contact {
+  id          Int          @id @default(autoincrement())
+  entity_id   Int
+  type        contact_type
+  value       String       @db.VarChar(255)
+  description String?      @db.VarChar(100)
+  is_primary  Boolean      @default(false)
+  is_active   Boolean      @default(true)
+  is_verified Boolean      @default(false)
+  valid_from  DateTime?    @db.Date
+  valid_until DateTime?    @db.Date
+  notes       String?
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
+  deleted_at  DateTime?
+
+  entity entity @relation(fields: [entity_id], references: [id], onDelete: Restrict)
+
+  @@index([entity_id, type])
+  @@index([value])
+}
+
+model entity_document {
+  id              Int                  @id @default(autoincrement())
+  entity_id       Int
+  type            entity_document_type
+  document_number String?              @db.VarChar(50)
+  issuing_body    String?              @db.VarChar(100)
+  issue_date      DateTime?            @db.Date
+  expiry_date     DateTime?            @db.Date
+  file_path       String?              @db.VarChar(500)
+  file_name       String?              @db.VarChar(255)
+  mime_type       String?              @db.VarChar(100)
+  file_size       Int?
+  description     String?              @db.VarChar(255)
+  is_verified     Boolean              @default(false)
+  verified_at     DateTime?
+  is_active       Boolean              @default(true)
+  notes           String?
+  created_at      DateTime             @default(now())
+  updated_at      DateTime             @updatedAt
+  deleted_at      DateTime?
+
+  entity entity @relation(fields: [entity_id], references: [id], onDelete: Restrict)
+
+  @@index([entity_id, type])
+  @@index([document_number])
+  @@index([expiry_date])
+}
+
+model entity_role {
+  id              Int                @id @default(autoincrement())
+  entity_id       Int
+  organization_id Int
+  congregation_id Int?
+  type            entity_role_type
+  status          entity_role_status @default(ATIVO)
+  start_date      DateTime           @db.Date
+  end_date        DateTime?          @db.Date
+  notes           String?
+  created_at      DateTime           @default(now())
+  updated_at      DateTime           @updatedAt
+  deleted_at      DateTime?
+
+  entity                  entity                   @relation(fields: [entity_id], references: [id], onDelete: Restrict)
+  organization            organization             @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  congregation            congregation?            @relation(fields: [congregation_id], references: [id], onDelete: Restrict)
+  member_details          member_detail?
+  member_role_assignments member_role_assignment[]
+
+  @@unique([entity_id, type, organization_id, congregation_id])
+  @@index([organization_id, type])
+  @@index([congregation_id, type])
+  @@index([status])
+}
+
+model member_status {
+  id              Int      @id @default(autoincrement())
+  organization_id Int
+  name            String   @db.VarChar(100)
+  description     String?
+  color           String?  @db.VarChar(20)
+  is_active       Boolean  @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  organization organization    @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  members      member_detail[]
+
+  @@unique([organization_id, name])
+}
+
+model congregation_member_role {
+  id              Int      @id @default(autoincrement())
+  organization_id Int
+  name            String   @db.VarChar(100)
+  description     String?
+  is_active       Boolean  @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  organization organization             @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  assignments  member_role_assignment[]
+
+  @@unique([organization_id, name])
+}
+
+model member_detail {
+  id                     Int       @id @default(autoincrement())
+  entity_role_id         Int       @unique
+  member_status_id       Int?
+  member_number          String?   @db.VarChar(50)
+  conversion_date        DateTime? @db.Date
+  water_baptism_date     DateTime? @db.Date
+  spirit_baptism_date    DateTime? @db.Date
+  reception_date         DateTime? @db.Date
+  member_since           DateTime? @db.Date
+  transfer_letter_number String?   @db.VarChar(50)
+  transferred_from       String?   @db.VarChar(255)
+  notes                  String?
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+
+  entity_role   entity_role    @relation(fields: [entity_role_id], references: [id], onDelete: Restrict)
+  member_status member_status? @relation(fields: [member_status_id], references: [id], onDelete: Restrict)
+
+  @@index([member_status_id])
+  @@index([member_number])
+}
+
+model member_role_assignment {
+  id                          Int       @id @default(autoincrement())
+  entity_role_id              Int
+  congregation_member_role_id Int
+  start_date                  DateTime? @db.Date
+  end_date                    DateTime? @db.Date
+  is_active                   Boolean   @default(true)
+  notes                       String?
+  created_at                  DateTime  @default(now())
+  updated_at                  DateTime  @updatedAt
+  deleted_at                  DateTime?
+
+  entity_role              entity_role              @relation(fields: [entity_role_id], references: [id], onDelete: Restrict)
+  congregation_member_role congregation_member_role @relation(fields: [congregation_member_role_id], references: [id], onDelete: Restrict)
+
+  @@index([entity_role_id, is_active])
+  @@index([congregation_member_role_id])
+}
+
+model person_profession {
+  id            Int       @id @default(autoincrement())
+  entity_id     Int
+  occupation_id Int
+  company       String?   @db.VarChar(255)
+  position      String?   @db.VarChar(150)
+  salary        Decimal?  @db.Decimal(10, 2)
+  start_date    DateTime? @db.Date
+  end_date      DateTime? @db.Date
+  is_current    Boolean   @default(false)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  entity     entity     @relation(fields: [entity_id], references: [id], onDelete: Restrict)
+  occupation occupation @relation(fields: [occupation_id], references: [id], onDelete: Restrict)
+
+  @@index([entity_id])
+  @@index([occupation_id])
+}
+
+model person_education {
+  id          Int               @id @default(autoincrement())
+  entity_id   Int
+  level       education_level
+  status      education_status? @default(COMPLETO)
+  institution String?           @db.VarChar(255)
+  course      String?           @db.VarChar(255)
+  start_year  Int?
+  end_year    Int?
+  created_at  DateTime          @default(now())
+  updated_at  DateTime          @updatedAt
+
+  entity entity @relation(fields: [entity_id], references: [id], onDelete: Restrict)
+
+  @@index([entity_id])
+  @@index([level])
+}
+
+// ===== MODULE: USERS AND ACCESS CONTROL =====
+
+model user {
+  id                   Int       @id @default(autoincrement())
+  entity_id            Int       @unique
+  name                 String    @db.VarChar(255)
+  email                String    @unique @db.VarChar(255)
+  password_hash        String    @db.VarChar(255)
+  is_active            Boolean   @default(true)
+  is_platform_admin    Boolean   @default(false)
+  must_change_password Boolean   @default(false)
+  attendance_threshold Int       @default(75)
+  profile_photo_path   String?   @db.VarChar(500)
+  last_login_at        DateTime?
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+  deleted_at           DateTime?
+
+  entity                           entity                           @relation(fields: [entity_id], references: [id], onDelete: Restrict)
+  organizations                    user_organization[]              @relation("UserOrganizationAccess")
+  invitations_sent                 user_organization[]              @relation("UserOrganizationInviter")
+  profiles                         user_profile[]
+  status_changes                   user_status_change[]             @relation("ChangedUser")
+  status_changes_made              user_status_change[]             @relation("StatusChangedBy")
+  ecclesiastical_positions_created member_ecclesiastical_position[]
+
+  @@index([is_active])
+  @@index([deleted_at])
+}
+
+model user_organization {
+  id                    Int       @id @default(autoincrement())
+  organization_id       Int
+  user_id               Int
+  congregation_id       Int
+  invited_by_id         Int?
+  is_active             Boolean   @default(true)
+  verified_at           DateTime?
+  invited_at            DateTime?
+  invitation_token_hash String?   @unique @db.Char(64)
+  invitation_expires_at DateTime?
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  deleted_at            DateTime?
+
+  organization organization @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  user         user         @relation("UserOrganizationAccess", fields: [user_id], references: [id], onDelete: Restrict)
+  congregation congregation @relation(fields: [congregation_id, organization_id], references: [id, organization_id], onDelete: Restrict)
+  invited_by   user?        @relation("UserOrganizationInviter", fields: [invited_by_id], references: [id], onDelete: SetNull)
+
+  @@unique([organization_id, user_id, congregation_id])
+  @@index([user_id, is_active])
+  @@index([organization_id, congregation_id])
+}
+
+model user_status_change {
+  id            Int                     @id @default(autoincrement())
+  user_id       Int
+  changed_by_id Int
+  status        user_status_change_type
+  reason        String?
+  created_at    DateTime                @default(now())
+
+  user       user @relation("ChangedUser", fields: [user_id], references: [id], onDelete: Restrict)
+  changed_by user @relation("StatusChangedBy", fields: [changed_by_id], references: [id], onDelete: Restrict)
+
+  @@index([user_id, created_at])
+}
+
+model profile {
+  id              Int      @id @default(autoincrement())
+  organization_id Int
+  name            String   @db.VarChar(100)
+  is_active       Boolean  @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  organization organization         @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  users        user_profile[]
+  permissions  profile_permission[]
+
+  @@unique([organization_id, name])
+}
+
+model permission {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(150)
+  slug        String   @unique @db.VarChar(150)
+  description String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  profiles profile_permission[]
+}
+
+model profile_permission {
+  id            Int @id @default(autoincrement())
+  profile_id    Int
+  permission_id Int
+
+  profile    profile    @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  permission permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+
+  @@unique([profile_id, permission_id])
+}
+
+model user_profile {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  profile_id Int
+  created_at DateTime @default(now())
+
+  user    user    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  profile profile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, profile_id])
+}
+
+// ===== MODULE: ECCLESIASTICAL POSITIONS =====
+
+model ecclesiastical_position {
+  id              Int      @id @default(autoincrement())
+  organization_id Int
+  name            String   @db.VarChar(150)
+  description     String?
+  hierarchy_level Int      @default(0)
+  is_active       Boolean  @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  organization organization                     @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  members      member_ecclesiastical_position[]
+
+  @@unique([organization_id, name])
+  @@index([organization_id, hierarchy_level])
+}
+
+model member_ecclesiastical_position {
+  id                         Int       @id @default(autoincrement())
+  congregation_id            Int
+  entity_id                  Int
+  ecclesiastical_position_id Int
+  created_by_id              Int?
+  ordination_date            DateTime? @db.Date
+  start_date                 DateTime? @db.Date
+  end_date                   DateTime? @db.Date
+  is_active                  Boolean   @default(true)
+  notes                      String?
+  created_at                 DateTime  @default(now())
+  updated_at                 DateTime  @updatedAt
+  deleted_at                 DateTime?
+
+  congregation            congregation            @relation(fields: [congregation_id], references: [id], onDelete: Restrict)
+  entity                  entity                  @relation(fields: [entity_id], references: [id], onDelete: Restrict)
+  ecclesiastical_position ecclesiastical_position @relation(fields: [ecclesiastical_position_id], references: [id], onDelete: Restrict)
+  created_by              user?                   @relation(fields: [created_by_id], references: [id], onDelete: SetNull)
+
+  @@index([congregation_id, is_active])
+  @@index([entity_id, is_active])
+  @@index([ecclesiastical_position_id])
 }
