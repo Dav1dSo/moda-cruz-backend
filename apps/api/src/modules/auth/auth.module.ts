@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthLoginService } from './login.service';
+import { AuthLoginService } from './application/use-cases/login.use-case';
 import { AuthController } from './auth.controller';
-import { AuthRefreshTokenService } from './refresh-token.service';
-import { ResetPasswordService } from './reset-password.service';
-import { ConfirmResetPassword } from './confirm-reset-password.service';
+import { AuthRefreshTokenService } from './application/use-cases/refresh-token.use-case';
+import { ResetPasswordService } from './application/use-cases/reset-password.use-case';
+import { ConfirmResetPasswordUseCase } from './application/use-cases/confirm-reset-password.use-case';
 import { AuthLoginRequired } from './guards/auth.guard';
 import { EmailService } from '@app/notification';
+import { UsersRepository } from './domain/repository';
 
 @Module({
   imports: [
@@ -22,8 +23,9 @@ import { EmailService } from '@app/notification';
     AuthLoginService,
     AuthRefreshTokenService,
     ResetPasswordService,
-    ConfirmResetPassword,
+    ConfirmResetPasswordUseCase,
     AuthLoginRequired,
+    UsersRepository
   ],
   exports: [JwtModule, AuthLoginRequired],
 })

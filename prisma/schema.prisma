@@ -8,8 +8,8 @@ datasource db {
 }
 
 enum entity_type {
-  PESSOA_FISICA
-  PESSOA_JURIDICA
+  PESSOA_FíSICA
+  PESSOA_JURÍDICA
 }
 
 enum entity_status {
@@ -25,8 +25,8 @@ enum entity_role_type {
   CLIENTE
   FUNCIONARIO
   PASTOR
-  VOLUNTARIO
-  BENEFICIARIO
+  VOLUNTÁRIO
+  BENEFICIÁRIO
   DOADOR
   VISITANTE
   COLABORADOR
@@ -48,7 +48,7 @@ enum marital_status {
   SOLTEIRO
   CASADO
   DIVORCIADO
-  VIUVO
+  VIÚVO
   SEPARADO
 }
 
@@ -65,7 +65,7 @@ enum blood_type {
 
 enum company_size {
   MEI
-  MICRO
+  ME
   PEQUENA
   MEDIA
   GRANDE
@@ -78,10 +78,10 @@ enum entity_document_type {
   CARTEIRA_TRABALHO
   CERTIFICADO_MILITAR
   TITULO_ELEITOR
-  CERTIDAO_NASCIMENTO
-  CERTIDAO_CASAMENTO
-  COMPROVANTE_RESIDENCIA
-  EXTRATO_BANCARIO
+  CERTIDÃO_NASCIMENTO
+  CERTIDÃO_CASAMENTO
+  COMPROVANTE_RESIDÊNCIA
+  EXTRATO_BANCÁRIO
   COMPROVANTE_RENDA
   CONTRATO
   CERTIFICADO_ESCOLAR
@@ -94,16 +94,15 @@ enum contact_type {
   TELEFONE
   WHATSAPP
   TELEGRAM
-  FAX
   OUTRO
 }
 
 enum education_level {
   FUNDAMENTAL
-  MEDIO
-  TECNICO
-  GRADUACAO
-  POS_GRADUACAO
+  MÉDIO
+  TÉCNICO
+  GRADUAÇÃO
+  POS_GRADUAÇÃO
   MESTRADO
   DOUTORADO
 }
@@ -120,20 +119,46 @@ enum user_status_change_type {
   DESATIVADO
 }
 
+enum management_account_type {
+  RECEITA
+  DESPESA
+}
+
+enum asaas_environment {
+  SANDBOX
+  PRODUÇÃO
+}
+
+enum asaas_pix_key_type {
+  CPF
+  CNPJ
+  EMAIL
+  TELEFONE
+  ALEATÓRIA
+}
+
+enum asaas_integration_status {
+  NÃO_CONFIGURADO
+  CONECTADO
+  ERRO_CONEXÃO
+}
+
 // ===== MODULE: GEOGRAPHY AND ADDRESS =====
 
-model country {
+model Country {
   id         Int      @id @default(autoincrement())
   name       String   @db.VarChar(100)
   code       String?  @unique @db.Char(3)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  states        state[]
-  nationalities nationality[]
+  states        State[]
+  nationalities Nationality[]
+
+  @@map("country")
 }
 
-model state {
+model State {
   id         Int      @id @default(autoincrement())
   country_id Int
   name       String   @db.VarChar(100)
@@ -141,14 +166,15 @@ model state {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  country country @relation(fields: [country_id], references: [id], onDelete: Restrict)
-  cities  city[]
+  country Country @relation(fields: [country_id], references: [id], onDelete: Restrict)
+  cities  City[]
 
   @@unique([country_id, code])
   @@index([country_id])
+  @@map("state")
 }
 
-model city {
+model City {
   id         Int      @id @default(autoincrement())
   state_id   Int
   name       String   @db.VarChar(150)
@@ -156,14 +182,15 @@ model city {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  state         state            @relation(fields: [state_id], references: [id], onDelete: Restrict)
-  addresses     address[]
-  birth_records natural_person[] @relation("BirthCity")
+  state         State           @relation(fields: [state_id], references: [id], onDelete: Restrict)
+  addresses     Address[]
+  birth_records NaturalPerson[] @relation("BirthCity")
 
   @@index([state_id, name])
+  @@map("city")
 }
 
-model address {
+model Address {
   id           Int      @id @default(autoincrement())
   city_id      Int
   postal_code  String?  @db.Char(8)
@@ -176,16 +203,16 @@ model address {
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
 
-  city         city          @relation(fields: [city_id], references: [id], onDelete: Restrict)
-  organization organization?
-  congregation congregation?
-  entity       entity?
+  city         City          @relation(fields: [city_id], references: [id], onDelete: Restrict)
+  congregation Congregation?
+  entity       Entity?
 
   @@index([city_id])
   @@index([postal_code])
+  @@map("address")
 }
 
-model nationality {
+model Nationality {
   id         Int      @id @default(autoincrement())
   country_id Int?
   name       String   @unique @db.VarChar(100)
@@ -194,56 +221,59 @@ model nationality {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  country         country?         @relation(fields: [country_id], references: [id], onDelete: SetNull)
-  natural_persons natural_person[]
+  country         Country?        @relation(fields: [country_id], references: [id], onDelete: SetNull)
+  natural_persons NaturalPerson[]
 
   @@index([country_id])
+  @@map("nationality")
 }
 
-model occupation {
+model Occupation {
   id         Int      @id @default(autoincrement())
   name       String   @unique @db.VarChar(150)
   is_active  Boolean  @default(true)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  professions person_profession[]
+  professions PersonProfession[]
+
+  @@map("occupation")
 }
 
 // ===== MODULE: ORGANIZATION AND CONGREGATION =====
 
-model organization {
+model Organization {
   id                     Int       @id @default(autoincrement())
-  address_id             Int?      @unique
   cnpj                   String    @unique @db.Char(14)
   legal_name             String    @db.VarChar(255)
-  trade_name             String?   @db.VarChar(255)
   state_registration     String?   @db.VarChar(50)
   municipal_registration String?   @db.VarChar(50)
-  foundation_date        DateTime? @db.Date
   is_active              Boolean   @default(true)
   notes                  String?
   created_at             DateTime  @default(now())
   updated_at             DateTime  @updatedAt
   deleted_at             DateTime?
 
-  address          address?                   @relation(fields: [address_id], references: [id], onDelete: Restrict)
-  areas            congregation_area[]
-  sectors          congregation_sector[]
-  congregations    congregation[]
-  entities         entity[]
-  user_accesses    user_organization[]
-  profiles         profile[]
-  member_statuses  member_status[]
-  member_roles     congregation_member_role[]
-  church_positions ecclesiastical_position[]
-  entity_roles     entity_role[]
+  areas               CongregationArea[]
+  sectors             CongregationSector[]
+  congregations       Congregation[]
+  entities            Entity[]
+  user_accesses       UserOrganization[]
+  profiles            Profile[]
+  member_statuses     MemberStatus[]
+  member_roles        CongregationMemberRole[]
+  document_types      DocumentType[]
+  church_positions    EcclesiasticalPosition[]
+  entity_roles        EntityRole[]
+  management_accounts ManagementAccount[]
+  asaas_integration   OrganizationAsaasIntegration?
 
   @@index([is_active])
   @@index([deleted_at])
+  @@map("organization")
 }
 
-model congregation_area {
+model CongregationArea {
   id              Int       @id @default(autoincrement())
   organization_id Int
   name            String    @db.VarChar(150)
@@ -253,16 +283,17 @@ model congregation_area {
   updated_at      DateTime  @updatedAt
   deleted_at      DateTime?
 
-  organization  organization          @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  sectors       congregation_sector[]
-  congregations congregation[]
+  organization  Organization         @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  sectors       CongregationSector[]
+  congregations Congregation[]
 
   @@unique([organization_id, name])
   @@unique([id, organization_id])
   @@index([organization_id, is_active])
+  @@map("congregation_area")
 }
 
-model congregation_sector {
+model CongregationSector {
   id              Int       @id @default(autoincrement())
   organization_id Int
   area_id         Int
@@ -273,18 +304,19 @@ model congregation_sector {
   updated_at      DateTime  @updatedAt
   deleted_at      DateTime?
 
-  organization  organization      @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  area          congregation_area @relation(fields: [area_id], references: [id], onDelete: Restrict)
-  congregations congregation[]
+  organization  Organization     @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  area          CongregationArea @relation(fields: [area_id], references: [id], onDelete: Restrict)
+  congregations Congregation[]
 
   @@unique([organization_id, name])
   @@unique([id, organization_id])
   @@index([organization_id, area_id])
+  @@map("congregation_sector")
 }
 
-model congregation {
+model Congregation {
   id                          Int       @id @default(autoincrement())
-  organization_id             Int
+  organization_id             Int?
   parent_id                   Int?
   area_id                     Int?
   sector_id                   Int?
@@ -307,16 +339,17 @@ model congregation {
   updated_at                  DateTime  @updatedAt
   deleted_at                  DateTime?
 
-  organization                    organization                     @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  parent                          congregation?                    @relation("CongregationHierarchy", fields: [parent_id], references: [id], onDelete: SetNull)
-  children                        congregation[]                   @relation("CongregationHierarchy")
-  area                            congregation_area?               @relation(fields: [area_id, organization_id], references: [id, organization_id])
-  sector                          congregation_sector?             @relation(fields: [sector_id, organization_id], references: [id, organization_id])
-  address                         address?                         @relation(fields: [address_id], references: [id], onDelete: Restrict)
-  pastor                          entity?                          @relation("CongregationPastor", fields: [pastor_entity_id], references: [id], onDelete: SetNull)
-  user_accesses                   user_organization[]
-  entity_roles                    entity_role[]
-  member_ecclesiastical_positions member_ecclesiastical_position[]
+  organization                    Organization?                   @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  parent                          Congregation?                  @relation("CongregationHierarchy", fields: [parent_id], references: [id], onDelete: SetNull)
+  children                        Congregation[]                 @relation("CongregationHierarchy")
+  area                            CongregationArea?              @relation(fields: [area_id, organization_id], references: [id, organization_id])
+  sector                          CongregationSector?            @relation(fields: [sector_id, organization_id], references: [id, organization_id])
+  address                         Address?                       @relation(fields: [address_id], references: [id], onDelete: Restrict)
+  pastor                          Entity?                        @relation("CongregationPastor", fields: [pastor_entity_id], references: [id], onDelete: SetNull)
+  user_accesses                   UserOrganization[]
+  entity_roles                    EntityRole[]
+  member_ecclesiastical_positions MemberEcclesiasticalPosition[]
+  management_accounts             ManagementAccount[]
 
   @@unique([organization_id, name])
   @@unique([id, organization_id])
@@ -324,11 +357,62 @@ model congregation {
   @@index([area_id])
   @@index([sector_id])
   @@index([parent_id])
+  @@map("congregation")
+}
+
+// ===== MODULE: ORGANIZATION FINANCIAL SETTINGS =====
+
+model ManagementAccount {
+  id              Int                     @id @default(autoincrement())
+  organization_id Int
+  congregation_id Int?
+  parent_id       Int?
+  code            String                  @db.VarChar(50)
+  name            String                  @db.VarChar(255)
+  type            management_account_type
+  is_analytic     Boolean                 @default(false)
+  is_active       Boolean                 @default(true)
+  created_at      DateTime                @default(now())
+  updated_at      DateTime                @updatedAt
+  deleted_at      DateTime?
+
+  organization Organization        @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  congregation Congregation?       @relation(fields: [congregation_id, organization_id], references: [id, organization_id], onDelete: Restrict)
+  parent       ManagementAccount?  @relation("ManagementAccountHierarchy", fields: [parent_id], references: [id], onDelete: Restrict)
+  children     ManagementAccount[] @relation("ManagementAccountHierarchy")
+
+  @@index([organization_id, type])
+  @@index([organization_id, code])
+  @@index([congregation_id])
+  @@index([parent_id])
+  @@index([deleted_at])
+  @@map("management_account")
+}
+
+model OrganizationAsaasIntegration {
+  id                       Int                      @id @default(autoincrement())
+  organization_id          Int                      @unique
+  access_token             String
+  wallet_id                String?                  @db.VarChar(100)
+  pix_key                  String?                  @db.VarChar(255)
+  pix_key_type             asaas_pix_key_type?
+  status                   asaas_integration_status @default(NÃO_CONFIGURADO)
+  created_at               DateTime                 @default(now())
+  updated_at               DateTime                 @updatedAt
+  deleted_at               DateTime?
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+
+  @@index([status])
+  @@index([wallet_id])
+  @@index([pix_key])
+  @@index([deleted_at])
+  @@map("organization_asaas_integration")
 }
 
 // ===== MODULE: ENTITY =====
 
-model entity {
+model Entity {
   id              Int           @id @default(autoincrement())
   organization_id Int
   address_id      Int?          @unique
@@ -340,26 +424,27 @@ model entity {
   updated_at      DateTime      @updatedAt
   deleted_at      DateTime?
 
-  organization             organization                     @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  address                  address?                         @relation(fields: [address_id], references: [id], onDelete: Restrict)
-  natural_person           natural_person?
-  legal_person             legal_person?
-  contacts                 entity_contact[]
-  documents                entity_document[]
-  roles                    entity_role[]
-  professions              person_profession[]
-  educations               person_education[]
-  user                     user?
-  pastor_of                congregation[]                   @relation("CongregationPastor")
-  ecclesiastical_positions member_ecclesiastical_position[]
+  organization             Organization                   @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  address                  Address?                       @relation(fields: [address_id], references: [id], onDelete: Restrict)
+  natural_person           NaturalPerson?
+  legal_person             LegalPerson?
+  contacts                 EntityContact[]
+  documents                EntityDocument[]
+  roles                    EntityRole[]
+  professions              PersonProfession[]
+  educations               PersonEducation[]
+  user                     User?
+  pastor_of                Congregation[]                 @relation("CongregationPastor")
+  ecclesiastical_positions MemberEcclesiasticalPosition[]
 
   @@index([organization_id, type])
   @@index([organization_id, display_name])
   @@index([status])
   @@index([deleted_at])
+  @@map("entity")
 }
 
-model natural_person {
+model NaturalPerson {
   id                     Int             @id @default(autoincrement())
   entity_id              Int             @unique
   nationality_id         Int?
@@ -383,15 +468,16 @@ model natural_person {
   created_at             DateTime        @default(now())
   updated_at             DateTime        @updatedAt
 
-  entity      entity       @relation(fields: [entity_id], references: [id], onDelete: Restrict)
-  nationality nationality? @relation(fields: [nationality_id], references: [id], onDelete: SetNull)
-  birth_city  city?        @relation("BirthCity", fields: [birth_city_id], references: [id], onDelete: SetNull)
+  entity      Entity       @relation(fields: [entity_id], references: [id], onDelete: Restrict)
+  nationality Nationality? @relation(fields: [nationality_id], references: [id], onDelete: SetNull)
+  birth_city  City?        @relation("BirthCity", fields: [birth_city_id], references: [id], onDelete: SetNull)
 
   @@index([full_name])
   @@index([birth_date])
+  @@map("natural_person")
 }
 
-model legal_person {
+model LegalPerson {
   id                     Int           @id @default(autoincrement())
   entity_id              Int           @unique
   legal_name             String        @db.VarChar(255)
@@ -406,13 +492,14 @@ model legal_person {
   created_at             DateTime      @default(now())
   updated_at             DateTime      @updatedAt
 
-  entity entity @relation(fields: [entity_id], references: [id], onDelete: Restrict)
+  entity Entity @relation(fields: [entity_id], references: [id], onDelete: Restrict)
 
   @@index([legal_name])
   @@index([trade_name])
+  @@map("legal_person")
 }
 
-model entity_contact {
+model EntityContact {
   id          Int          @id @default(autoincrement())
   entity_id   Int
   type        contact_type
@@ -428,13 +515,14 @@ model entity_contact {
   updated_at  DateTime     @updatedAt
   deleted_at  DateTime?
 
-  entity entity @relation(fields: [entity_id], references: [id], onDelete: Restrict)
+  entity Entity @relation(fields: [entity_id], references: [id], onDelete: Restrict)
 
   @@index([entity_id, type])
   @@index([value])
+  @@map("entity_contact")
 }
 
-model entity_document {
+model EntityDocument {
   id              Int                  @id @default(autoincrement())
   entity_id       Int
   type            entity_document_type
@@ -455,14 +543,15 @@ model entity_document {
   updated_at      DateTime             @updatedAt
   deleted_at      DateTime?
 
-  entity entity @relation(fields: [entity_id], references: [id], onDelete: Restrict)
+  entity Entity @relation(fields: [entity_id], references: [id], onDelete: Restrict)
 
   @@index([entity_id, type])
   @@index([document_number])
   @@index([expiry_date])
+  @@map("entity_document")
 }
 
-model entity_role {
+model EntityRole {
   id              Int                @id @default(autoincrement())
   entity_id       Int
   organization_id Int
@@ -476,19 +565,20 @@ model entity_role {
   updated_at      DateTime           @updatedAt
   deleted_at      DateTime?
 
-  entity                  entity                   @relation(fields: [entity_id], references: [id], onDelete: Restrict)
-  organization            organization             @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  congregation            congregation?            @relation(fields: [congregation_id], references: [id], onDelete: Restrict)
-  member_details          member_detail?
-  member_role_assignments member_role_assignment[]
+  entity                  Entity                 @relation(fields: [entity_id], references: [id], onDelete: Restrict)
+  organization            Organization           @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  congregation            Congregation?          @relation(fields: [congregation_id], references: [id], onDelete: Restrict)
+  member_details          MemberDetail?
+  member_role_assignments MemberRoleAssignment[]
 
   @@unique([entity_id, type, organization_id, congregation_id])
   @@index([organization_id, type])
   @@index([congregation_id, type])
   @@index([status])
+  @@map("entity_role")
 }
 
-model member_status {
+model MemberStatus {
   id              Int      @id @default(autoincrement())
   organization_id Int
   name            String   @db.VarChar(100)
@@ -498,13 +588,14 @@ model member_status {
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
-  organization organization    @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  members      member_detail[]
+  organization Organization   @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  members      MemberDetail[]
 
   @@unique([organization_id, name])
+  @@map("member_status")
 }
 
-model congregation_member_role {
+model CongregationMemberRole {
   id              Int      @id @default(autoincrement())
   organization_id Int
   name            String   @db.VarChar(100)
@@ -513,13 +604,36 @@ model congregation_member_role {
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
-  organization organization             @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  assignments  member_role_assignment[]
+  organization Organization           @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  assignments  MemberRoleAssignment[]
 
   @@unique([organization_id, name])
+  @@map("congregation_member_role")
 }
 
-model member_detail {
+model DocumentType {
+  id               Int      @id @default(autoincrement())
+  organization_id  Int
+  name             String   @db.VarChar(100)
+  code             String?  @db.VarChar(50)
+  description      String?  @db.VarChar(500)
+  template_path    String?  @default("member") @db.VarChar(500)
+  template_content String?
+  background_image String?  @db.VarChar(500)
+  requires_spouse  Boolean  @default(false)
+  is_active        Boolean  @default(true)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+
+  @@unique([organization_id, name])
+  @@unique([organization_id, code])
+  @@index([organization_id, is_active])
+  @@map("document_type")
+}
+
+model MemberDetail {
   id                     Int       @id @default(autoincrement())
   entity_role_id         Int       @unique
   member_status_id       Int?
@@ -535,14 +649,15 @@ model member_detail {
   created_at             DateTime  @default(now())
   updated_at             DateTime  @updatedAt
 
-  entity_role   entity_role    @relation(fields: [entity_role_id], references: [id], onDelete: Restrict)
-  member_status member_status? @relation(fields: [member_status_id], references: [id], onDelete: Restrict)
+  entity_role   EntityRole    @relation(fields: [entity_role_id], references: [id], onDelete: Restrict)
+  member_status MemberStatus? @relation(fields: [member_status_id], references: [id], onDelete: Restrict)
 
   @@index([member_status_id])
   @@index([member_number])
+  @@map("member_detail")
 }
 
-model member_role_assignment {
+model MemberRoleAssignment {
   id                          Int       @id @default(autoincrement())
   entity_role_id              Int
   congregation_member_role_id Int
@@ -554,14 +669,15 @@ model member_role_assignment {
   updated_at                  DateTime  @updatedAt
   deleted_at                  DateTime?
 
-  entity_role              entity_role              @relation(fields: [entity_role_id], references: [id], onDelete: Restrict)
-  congregation_member_role congregation_member_role @relation(fields: [congregation_member_role_id], references: [id], onDelete: Restrict)
+  entity_role              EntityRole             @relation(fields: [entity_role_id], references: [id], onDelete: Restrict)
+  congregation_member_role CongregationMemberRole @relation(fields: [congregation_member_role_id], references: [id], onDelete: Restrict)
 
   @@index([entity_role_id, is_active])
   @@index([congregation_member_role_id])
+  @@map("member_role_assignment")
 }
 
-model person_profession {
+model PersonProfession {
   id            Int       @id @default(autoincrement())
   entity_id     Int
   occupation_id Int
@@ -574,14 +690,15 @@ model person_profession {
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
 
-  entity     entity     @relation(fields: [entity_id], references: [id], onDelete: Restrict)
-  occupation occupation @relation(fields: [occupation_id], references: [id], onDelete: Restrict)
+  entity     Entity     @relation(fields: [entity_id], references: [id], onDelete: Restrict)
+  occupation Occupation @relation(fields: [occupation_id], references: [id], onDelete: Restrict)
 
   @@index([entity_id])
   @@index([occupation_id])
+  @@map("person_profession")
 }
 
-model person_education {
+model PersonEducation {
   id          Int               @id @default(autoincrement())
   entity_id   Int
   level       education_level
@@ -593,49 +710,51 @@ model person_education {
   created_at  DateTime          @default(now())
   updated_at  DateTime          @updatedAt
 
-  entity entity @relation(fields: [entity_id], references: [id], onDelete: Restrict)
+  entity Entity @relation(fields: [entity_id], references: [id], onDelete: Restrict)
 
   @@index([entity_id])
   @@index([level])
+  @@map("person_education")
 }
 
 // ===== MODULE: USERS AND ACCESS CONTROL =====
 
-model user {
+model User {
   id                   Int       @id @default(autoincrement())
   entity_id            Int       @unique
   name                 String    @db.VarChar(255)
+  phone                String    @db.VarChar(14)
   email                String    @unique @db.VarChar(255)
   password_hash        String    @db.VarChar(255)
   is_active            Boolean   @default(true)
   is_platform_admin    Boolean   @default(false)
-  must_change_password Boolean   @default(false)
-  attendance_threshold Int       @default(75)
+  must_change_password Boolean   @default(true)
   profile_photo_path   String?   @db.VarChar(500)
   last_login_at        DateTime?
   created_at           DateTime  @default(now())
   updated_at           DateTime  @updatedAt
   deleted_at           DateTime?
 
-  entity                           entity                           @relation(fields: [entity_id], references: [id], onDelete: Restrict)
-  organizations                    user_organization[]              @relation("UserOrganizationAccess")
-  invitations_sent                 user_organization[]              @relation("UserOrganizationInviter")
-  profiles                         user_profile[]
-  status_changes                   user_status_change[]             @relation("ChangedUser")
-  status_changes_made              user_status_change[]             @relation("StatusChangedBy")
-  ecclesiastical_positions_created member_ecclesiastical_position[]
+  entity                           Entity                         @relation(fields: [entity_id], references: [id], onDelete: Restrict)
+  user_organizations               UserOrganization[]             @relation("UserOrganizationAccess")
+  invitations_sent                 UserOrganization[]             @relation("UserOrganizationInviter")
+  profiles                         UserProfile[]
+  status_changes                   UserStatusChange[]             @relation("ChangedUser")
+  status_changes_made              UserStatusChange[]             @relation("StatusChangedBy")
+  ecclesiastical_positions_created MemberEcclesiasticalPosition[]
 
   @@index([is_active])
   @@index([deleted_at])
+  @@map("user")
 }
 
-model user_organization {
+model UserOrganization {
   id                    Int       @id @default(autoincrement())
   organization_id       Int
   user_id               Int
   congregation_id       Int
   invited_by_id         Int?
-  is_active             Boolean   @default(true)
+  is_active             Boolean   @default(false)
   verified_at           DateTime?
   invited_at            DateTime?
   invitation_token_hash String?   @unique @db.Char(64)
@@ -644,17 +763,18 @@ model user_organization {
   updated_at            DateTime  @updatedAt
   deleted_at            DateTime?
 
-  organization organization @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  user         user         @relation("UserOrganizationAccess", fields: [user_id], references: [id], onDelete: Restrict)
-  congregation congregation @relation(fields: [congregation_id, organization_id], references: [id, organization_id], onDelete: Restrict)
-  invited_by   user?        @relation("UserOrganizationInviter", fields: [invited_by_id], references: [id], onDelete: SetNull)
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  user         User         @relation("UserOrganizationAccess", fields: [user_id], references: [id], onDelete: Restrict)
+  congregation Congregation @relation(fields: [congregation_id, organization_id], references: [id, organization_id], onDelete: Restrict)
+  invited_by   User?        @relation("UserOrganizationInviter", fields: [invited_by_id], references: [id], onDelete: SetNull)
 
   @@unique([organization_id, user_id, congregation_id])
   @@index([user_id, is_active])
   @@index([organization_id, congregation_id])
+  @@map("user_organization")
 }
 
-model user_status_change {
+model UserStatusChange {
   id            Int                     @id @default(autoincrement())
   user_id       Int
   changed_by_id Int
@@ -662,13 +782,14 @@ model user_status_change {
   reason        String?
   created_at    DateTime                @default(now())
 
-  user       user @relation("ChangedUser", fields: [user_id], references: [id], onDelete: Restrict)
-  changed_by user @relation("StatusChangedBy", fields: [changed_by_id], references: [id], onDelete: Restrict)
+  user       User @relation("ChangedUser", fields: [user_id], references: [id], onDelete: Restrict)
+  changed_by User @relation("StatusChangedBy", fields: [changed_by_id], references: [id], onDelete: Restrict)
 
   @@index([user_id, created_at])
+  @@map("user_status_change")
 }
 
-model profile {
+model Profile {
   id              Int      @id @default(autoincrement())
   organization_id Int
   name            String   @db.VarChar(100)
@@ -676,14 +797,15 @@ model profile {
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
-  organization organization         @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  users        user_profile[]
-  permissions  profile_permission[]
+  organization Organization        @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  users        UserProfile[]
+  permissions  ProfilePermission[]
 
   @@unique([organization_id, name])
+  @@map("profile")
 }
 
-model permission {
+model Permission {
   id          Int      @id @default(autoincrement())
   name        String   @db.VarChar(150)
   slug        String   @unique @db.VarChar(150)
@@ -691,35 +813,39 @@ model permission {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  profiles profile_permission[]
+  profiles ProfilePermission[]
+
+  @@map("permission")
 }
 
-model profile_permission {
+model ProfilePermission {
   id            Int @id @default(autoincrement())
   profile_id    Int
   permission_id Int
 
-  profile    profile    @relation(fields: [profile_id], references: [id], onDelete: Cascade)
-  permission permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+  profile    Profile    @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
 
   @@unique([profile_id, permission_id])
+  @@map("profile_permission")
 }
 
-model user_profile {
+model UserProfile {
   id         Int      @id @default(autoincrement())
   user_id    Int
   profile_id Int
   created_at DateTime @default(now())
 
-  user    user    @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  profile profile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, profile_id])
+  @@map("user_profile")
 }
 
 // ===== MODULE: ECCLESIASTICAL POSITIONS =====
 
-model ecclesiastical_position {
+model EcclesiasticalPosition {
   id              Int      @id @default(autoincrement())
   organization_id Int
   name            String   @db.VarChar(150)
@@ -729,14 +855,15 @@ model ecclesiastical_position {
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
-  organization organization                     @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  members      member_ecclesiastical_position[]
+  organization Organization                   @relation(fields: [organization_id], references: [id], onDelete: Restrict)
+  members      MemberEcclesiasticalPosition[]
 
   @@unique([organization_id, name])
   @@index([organization_id, hierarchy_level])
+  @@map("ecclesiastical_position")
 }
 
-model member_ecclesiastical_position {
+model MemberEcclesiasticalPosition {
   id                         Int       @id @default(autoincrement())
   congregation_id            Int
   entity_id                  Int
@@ -751,12 +878,13 @@ model member_ecclesiastical_position {
   updated_at                 DateTime  @updatedAt
   deleted_at                 DateTime?
 
-  congregation            congregation            @relation(fields: [congregation_id], references: [id], onDelete: Restrict)
-  entity                  entity                  @relation(fields: [entity_id], references: [id], onDelete: Restrict)
-  ecclesiastical_position ecclesiastical_position @relation(fields: [ecclesiastical_position_id], references: [id], onDelete: Restrict)
-  created_by              user?                   @relation(fields: [created_by_id], references: [id], onDelete: SetNull)
+  congregation            Congregation           @relation(fields: [congregation_id], references: [id], onDelete: Restrict)
+  entity                  Entity                 @relation(fields: [entity_id], references: [id], onDelete: Restrict)
+  ecclesiastical_position EcclesiasticalPosition @relation(fields: [ecclesiastical_position_id], references: [id], onDelete: Restrict)
+  created_by              User?                  @relation(fields: [created_by_id], references: [id], onDelete: SetNull)
 
   @@index([congregation_id, is_active])
   @@index([entity_id, is_active])
   @@index([ecclesiastical_position_id])
+  @@map("member_ecclesiastical_position")
 }

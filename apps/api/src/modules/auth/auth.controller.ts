@@ -4,15 +4,16 @@ import {
   ConfirmResetPasswordRequestDTO,
   ResetPasswordRequestDTO,
 } from './dtos/request/auth-service-dto';
-import { AuthLoginService } from './login.service';
+import { AuthLoginService } from './application/use-cases/login.use-case';
 import {
   AuthLoginResponseDTO,
   RefreshTokenResponseDTO,
+  RequiredLoginResponseDTO,
 } from './dtos/response/auth-response-dto';
-import { AuthRefreshTokenService } from './refresh-token.service';
+import { AuthRefreshTokenService } from './application/use-cases/refresh-token.use-case';
 import type { Request } from 'express';
-import { ResetPasswordService } from './reset-password.service';
-import { ConfirmResetPassword } from './confirm-reset-password.service';
+import { ResetPasswordService } from './application/use-cases/reset-password.use-case';
+import { ConfirmResetPasswordUseCase } from './application/use-cases/confirm-reset-password.use-case';
 import { ResponseDefaultDTO } from '../../shared/shared.dtos';
 
 @Controller('auth')
@@ -21,11 +22,11 @@ export class AuthController {
     private readonly authLoginServive: AuthLoginService,
     private readonly authRefreshTokenService: AuthRefreshTokenService,
     private readonly authResetPasswordService: ResetPasswordService,
-    private readonly authConfirmResetPassword: ConfirmResetPassword,
+    private readonly authConfirmResetPassword: ConfirmResetPasswordUseCase,
   ) {}
 
   @Post('/login')
-  async login(@Body() req: AuthLoginRequestDTO): Promise<AuthLoginResponseDTO> {
+  async login(@Body() req: AuthLoginRequestDTO): Promise<RequiredLoginResponseDTO> {
     return await this.authLoginServive.execute(req);
   }
 
