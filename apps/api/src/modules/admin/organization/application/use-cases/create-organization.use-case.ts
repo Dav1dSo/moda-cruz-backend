@@ -1,8 +1,12 @@
-import { BadGatewayException, ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { CreateOrganizationRequestDTO } from '../../dto/request/organization-request.dto';
 import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
-import { OrganizationRepository } from '../../domain/repository';
 import { DocumentValidator } from 'apps/api/src/shared/utils/validate-cpf-cnpj';
+import { OrganizationRepository } from '../../domain/repositories/repository';
 
 @Injectable()
 export class CreateOrganizationUseCase {
@@ -13,19 +17,25 @@ export class CreateOrganizationUseCase {
   async execute(
     req: CreateOrganizationRequestDTO,
   ): Promise<ResponseDefaultDTO> {
-    const get_organization = await this.organizationRepository.getOrganizationByName(
-      req.organization_name,
-    );
+    const organizationByName =
+      await this.organizationRepository.getOrganizationByName(
+        req.organization_name,
+      );
 
-    if (get_organization != null) {
-      throw new ConflictException('Organizaçao já cadastrada');
+    if (organizationByName) {
+      throw new ConflictException('Organização já cadastrada');
     }
 
+    const organizationByCnpj =
+      await this.organizationRepository.getOrganizationByCnpj(req.cnpj);
 
+    if (organizationByCnpj) {
+      throw new ConflictException('CNPJ já cadastrado');
+    }
 
-    const cnpj_valid = DocumentValidator.validate(req.cnpj, 'CNPJ');
-    if (!cnpj_valid) {
-      throw new BadGatewayException("CNPJ inválido")
+    const cnpjValid = DocumentValidator.validate(req.cnpj, 'CNPJ');
+    if (!cnpjValid) {
+      throw new BadRequestException('CNPJ inválido');
     }
 
     await this.organizationRepository.createOrganization(req);

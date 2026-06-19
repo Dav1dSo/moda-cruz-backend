@@ -14,7 +14,6 @@ import {
   UpdateUserRequestDTO,
 } from './dtos/request/user-request';
 import { ResponseDefaultDTO } from '../../../shared/shared.dtos';
-import { UsersServiceCreate } from './create-users.service';
 import { UserServiceGetAll } from './getall-users.service';
 import { FindUserService } from './find-user.service';
 import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
@@ -27,11 +26,12 @@ import {
 import { UserServiceUpdate } from './update-user.service';
 import { AuthLoginRequired } from '../../auth/guards/auth.guard';
 import { Permissions } from '../../auth/decorators/permissions-decorator';
+import { CreateUserUseCase } from './application/use-cases/create-users.use-case';
 
 @Controller('users')
 export class UsersController {
   constructor(
-    private readonly userServiceCreate: UsersServiceCreate,
+    private readonly createUserUseCase: CreateUserUseCase,
     private readonly userServiceGetAll: UserServiceGetAll,
     private readonly userServiceFind: FindUserService,
     private readonly userServiceDelete: UserServiceDelete,
@@ -55,7 +55,7 @@ export class UsersController {
   async create(
     @Body() userData: CreateUserRequestDTO,
   ): Promise<ResponseDefaultDTO> {
-    await this.userServiceCreate.execute(userData);
+    await this.createUserUseCase.execute(userData);
     return {
       message: 'User created successfully',
     };

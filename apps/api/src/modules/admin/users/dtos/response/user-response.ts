@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PaginationDTO } from 'apps/api/src/shared/shared.dtos';
+import { PaginationRequestDTO } from 'apps/api/src/shared/shared.dtos';
 import {
   IsDateString,
   IsEmail,
@@ -25,7 +25,7 @@ export class GetAllUsersResponseDTO {
   created_at!: string;
 }
 
-export class GetAllUsersFiltersDTO extends PaginationDTO {
+export class GetAllUsersFiltersDTO extends PaginationRequestDTO {
   @ApiProperty({ required: false, description: 'Filtrar por nome' })
   @IsString()
   @IsOptional()

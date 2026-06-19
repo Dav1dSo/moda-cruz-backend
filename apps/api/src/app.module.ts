@@ -5,6 +5,7 @@ import { UsersModule } from './modules/admin/users/users.module';
 import { ProfileModule } from './modules/admin/profile/profile.module';
 import { PermissionsModule } from './modules/admin/permissions/permissions.module';
 import { OrganizationModule } from './modules/admin/organization/organization.module';
+import { SecretariaModule } from './modules/secretaria/secretaria.module';
 
 @Module({
   imports: [
@@ -13,7 +14,8 @@ import { OrganizationModule } from './modules/admin/organization/organization.mo
     UsersModule,
     ProfileModule,
     PermissionsModule,
-    OrganizationModule
+    OrganizationModule,
+    SecretariaModule,
   ],
 })
 export class AppModule {}

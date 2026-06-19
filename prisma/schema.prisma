@@ -41,7 +41,6 @@ enum entity_role_status {
 enum gender {
   MASCULINO
   FEMININO
-  OUTRO
 }
 
 enum marital_status {
@@ -61,6 +60,20 @@ enum blood_type {
   AB_NEGATIVO
   O_POSITIVO
   O_NEGATIVO
+}
+
+enum disability_type {
+  FISICA
+  VISUAL
+  AUDITIVA
+  INTELECTUAL
+  COGNITIVA
+  PSICOSSOCIAL
+  FALA_LINGUAGEM
+  SURDOCEGUEIRA
+  TRANSTORNO_ESPECTRO_AUTISTA
+  MULTIPLA
+  OUTRA
 }
 
 enum company_size {
@@ -392,7 +405,7 @@ model ManagementAccount {
 model OrganizationAsaasIntegration {
   id                       Int                      @id @default(autoincrement())
   organization_id          Int                      @unique
-  access_token             String
+  access_token             String?
   wallet_id                String?                  @db.VarChar(100)
   pix_key                  String?                  @db.VarChar(255)
   pix_key_type             asaas_pix_key_type?
@@ -462,7 +475,7 @@ model NaturalPerson {
   father_name            String?         @db.VarChar(255)
   mother_name            String?         @db.VarChar(255)
   has_disability         Boolean         @default(false)
-  disability_type        String?         @db.VarChar(150)
+  disability_type        disability_type?
   disability_description String?
   photo_path             String?         @db.VarChar(500)
   created_at             DateTime        @default(now())

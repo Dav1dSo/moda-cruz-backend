@@ -8,7 +8,7 @@ export class ResponseDefaultDTO {
   message!: string;
 }
 
-export class PaginationDTO {
+export class PaginationRequestDTO {
   @ApiProperty({ description: 'Numero da pagina', default: 1 })
   @Type(() => Number)
   @IsInt()
@@ -20,4 +20,22 @@ export class PaginationDTO {
   @IsInt()
   @IsOptional()
   per_page = 10;
+}
+
+export class PaginationResponseDTO {
+  @ApiProperty()
+  @IsInt()
+  page!: number;
+
+  @ApiProperty()
+  @IsInt()
+  per_page!: number;
+
+  @ApiProperty()
+  @IsInt()
+  total!: number;
+
+  @ApiProperty()
+  @IsInt()
+  total_pages!: number;
 }

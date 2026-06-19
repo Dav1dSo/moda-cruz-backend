@@ -46,17 +46,6 @@ export class UserServiceUpdate {
           name: req.name,
           email: req.email,
           phone: req.phone,
-
-          address: {
-            create: {
-              street: req.street,
-              city: req.city,
-              state: req.state,
-              zipCode: req.zipCode,
-              country: req.country,
-              number: req.number,
-            },
-          },
         },
       });
 

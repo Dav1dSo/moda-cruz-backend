@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@app/database';
 
 @Injectable()
-export class UsersRepository {
+export class AuthRepository {
   constructor(private readonly db: PrismaService) {}
 
   async getUserByEmail(email: string) {

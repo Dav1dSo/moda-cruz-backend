@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { CreateOrganizationRequestDTO } from '../../dto/request/organization-request.dto';
 import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
-import { OrganizationRepository } from '../../domain/repository';
+import { OrganizationRepository } from '../../domain/repositories/repository';
 
 @Injectable()
 export class UpdateOrganizationUseCase {
@@ -15,7 +15,7 @@ export class UpdateOrganizationUseCase {
 
   async execute(
     req: CreateOrganizationRequestDTO,
-    id: Number,
+    id: number,
   ): Promise<ResponseDefaultDTO> {
     const organization =
       await this.organizationRepository.getOrganizationById(id);
@@ -24,14 +24,20 @@ export class UpdateOrganizationUseCase {
       throw new NotFoundException('Organização não encontrada');
     }
 
-    const valida_nome = await this.organizationRepository.getOrganizationByName(
-      req.organization_name,
-    );
+    const organizationByName =
+      await this.organizationRepository.getOrganizationByName(
+        req.organization_name,
+      );
 
-    if (valida_nome != null) {
-      if (valida_nome.id !== id) {
-        throw new ConflictException('Nome de organização já cadastrado');
-      }
+    if (organizationByName && organizationByName.id !== id) {
+      throw new ConflictException('Nome de organização já cadastrado');
+    }
+
+    const organizationByCnpj =
+      await this.organizationRepository.getOrganizationByCnpj(req.cnpj);
+
+    if (organizationByCnpj && organizationByCnpj.id !== id) {
+      throw new ConflictException('CNPJ já cadastrado');
     }
 
     await this.organizationRepository.updateOrganization(req, organization);

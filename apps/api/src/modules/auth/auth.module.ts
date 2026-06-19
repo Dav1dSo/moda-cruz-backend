@@ -7,7 +7,7 @@ import { ResetPasswordService } from './application/use-cases/reset-password.use
 import { ConfirmResetPasswordUseCase } from './application/use-cases/confirm-reset-password.use-case';
 import { AuthLoginRequired } from './guards/auth.guard';
 import { EmailService } from '@app/notification';
-import { UsersRepository } from './domain/repository';
+import { AuthRepository } from './domain/repository';
 
 @Module({
   imports: [
@@ -25,7 +25,7 @@ import { UsersRepository } from './domain/repository';
     ResetPasswordService,
     ConfirmResetPasswordUseCase,
     AuthLoginRequired,
-    UsersRepository
+    AuthRepository,
   ],
   exports: [JwtModule, AuthLoginRequired],
 })

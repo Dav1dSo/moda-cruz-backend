@@ -7,12 +7,12 @@ import { AuthLoginRequestDTO } from '../../dtos/request/auth-service-dto';
 import { RequiredLoginResponseDTO } from '../../dtos/response/auth-response-dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { UsersRepository } from '../../domain/repository';
+import { AuthRepository } from '../../domain/repository';
 
 @Injectable()
 export class AuthLoginService {
   constructor(
-    private readonly userRepository: UsersRepository,
+    private readonly userRepository: AuthRepository,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -49,26 +49,25 @@ export class AuthLoginService {
           expiresIn: '5m',
         },
       );
- 
+
       return {
         selection_token_organization: selectionToken,
         user: {
           id: user.id,
           email: user.email,
           name: user.name,
-          is_plataform_admin: user.is_platform_admin
+          is_plataform_admin: user.is_platform_admin,
         },
-        avaliable_organizations: user.user_organizations.map((userOrganization) => (
-          {
+        avaliable_organizations: user.user_organizations.map(
+          (userOrganization) => ({
             is_active: userOrganization.is_active,
             organization_id: userOrganization.organization_id,
             congregation_vinculo_id: userOrganization.congregation_id,
             congregation_name: userOrganization.congregation.name,
             organization_name: userOrganization.organization.legal_name,
-          }
-        ))
-      }
-
+          }),
+        ),
+      };
     } catch (error) {
       throw error;
     }
