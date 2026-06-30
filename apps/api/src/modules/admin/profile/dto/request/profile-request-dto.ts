@@ -33,11 +33,6 @@ export class CreateProfileRequestDTO {
   @IsInt({ each: true })
   @Type(() => Number)
   permission_ids!: number[];
-
-  @ApiProperty({ description: 'ID de organização' })
-  @IsNotEmpty()
-  @IsInt()
-  organization_id!: number;
 }
 
 export class GetAllProfilesRequestDTO {

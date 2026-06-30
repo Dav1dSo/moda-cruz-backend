@@ -3,14 +3,19 @@ import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreatePermissionRequestDTO {
   @ApiProperty({
-    description: "Slug da permissão exemplo: 'users.read - users.delete'",
+    description: "Chave da permissão exemplo: 'users.read' ou 'orders.update'",
   })
   @IsString()
   @IsNotEmpty()
-  slug!: string;
+  key!: string;
 
   @ApiProperty({ description: 'Nome da permissão' })
   @IsString()
   @IsNotEmpty()
   name!: string;
+
+  @ApiProperty({ description: 'Módulo da permissão' })
+  @IsString()
+  @IsNotEmpty()
+  module!: string;
 }

@@ -28,31 +28,13 @@
         "tsConfigPath": "libs/database/tsconfig.lib.json"
       }
     },
-    "notification": {
-      "type": "library",
-      "root": "libs/notification",
-      "entryFile": "index",
-      "sourceRoot": "libs/notification/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/notification/tsconfig.lib.json"
-      }
-    },
-    "people-service": {
+    "notification-services": {
       "type": "application",
-      "root": "apps/people-service",
+      "root": "apps/notification-services",
       "entryFile": "main",
-      "sourceRoot": "apps/people-service/src",
+      "sourceRoot": "apps/notification-services/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/people-service/tsconfig.app.json"
-      }
-    },
-    "rabbitmq": {
-      "type": "library",
-      "root": "libs/rabbitmq",
-      "entryFile": "index",
-      "sourceRoot": "libs/rabbitmq/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/rabbitmq/tsconfig.lib.json"
+        "tsConfigPath": "apps/notification-services/tsconfig.app.json"
       }
     }
   }

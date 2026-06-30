@@ -16,19 +16,21 @@ export class AuthRepository {
         deleted_at: true,
         is_active: true,
         password_hash: true,
-        user_organizations: {
+        profiles: {
           select: {
-            organization_id: true,
-            congregation_id: true,
-            is_active: true,
-            organization: {
+            profile: {
               select: {
-                legal_name: true,
-              },
-            },
-            congregation: {
-              select: {
+                id: true,
                 name: true,
+                permissions: {
+                  select: {
+                    permission: {
+                      select: {
+                        key: true,
+                      },
+                    },
+                  },
+                },
               },
             },
           },

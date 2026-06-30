@@ -1,8 +1,13 @@
 import { Module } from '@nestjs/common';
-import { PeopleModule } from './notification/people.module';
-import { DatabaseModule } from '@app/database';
+import { ConfigModule } from '@nestjs/config';
+import { MessagingModule } from './notification/messaging/messaging.module';
 
 @Module({
-  imports: [DatabaseModule, PeopleModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    MessagingModule,
+  ],
 })
 export class AppModule {}

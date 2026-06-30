@@ -7,7 +7,6 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { StringifyOptions } from 'node:querystring';
 
 export class UserResponseDTO {
   @ApiProperty({
@@ -24,58 +23,57 @@ export class UserResponseDTO {
     description: 'Nome de usuário',
   })
   @IsString()
-  name!: String;
+  name!: string;
 
   @ApiProperty({ description: 'Status de usuário' })
   @IsBoolean()
-  is_plataform_admin!: boolean;
+  is_platform_admin!: boolean;
 }
 
-export class AvaliableOrganizationsResponseDTO {
+export class ProfileResponseDTO {
   @ApiProperty({
-    description: 'Id da organização',
+    description: 'Id do perfil',
   })
   @IsNumber()
-  organization_id!: number;
+  id!: number;
 
   @ApiProperty({
-    description: 'Nome da organização',
+    description: 'Nome do perfil',
   })
   @IsString()
-  organization_name!: string;
+  name!: string;
 
   @ApiProperty({
-    description: 'Id da organização',
+    description: 'Permissões do perfil',
+    type: [String],
   })
-  @IsNumber()
-  congregation_vinculo_id!: number;
-
-  @ApiProperty({
-    description: 'Nome da congregação',
-  })
-  @IsString()
-  congregation_name!: string;
-
-  @ApiProperty({
-    description: 'Verificação pendente?',
-  })
-  @IsBoolean()
-  is_active!: boolean;
+  permissions!: string[];
 }
 
 export class RequiredLoginResponseDTO {
   @ApiProperty({
-    description: 'Pré token de autorização',
+    description: 'Access token',
   })
   @IsString()
-  selection_token_organization!: string;
+  accessToken!: string;
+
+  @ApiProperty({
+    description: 'Refresh token',
+  })
+  @IsString()
+  refreshToken!: string;
 
   @ApiProperty({ type: UserResponseDTO })
   @ValidateNested()
   @Type(() => UserResponseDTO)
   user!: UserResponseDTO;
 
-  avaliable_organizations!: AvaliableOrganizationsResponseDTO[];
+  @ApiProperty({
+    type: [ProfileResponseDTO],
+  })
+  @ValidateNested({ each: true })
+  @Type(() => ProfileResponseDTO)
+  profiles!: ProfileResponseDTO[];
 }
 
 export class AuthLoginResponseDTO {
@@ -84,7 +82,7 @@ export class AuthLoginResponseDTO {
   accessToken!: string;
 
   @IsJWT()
-  @ApiProperty({ description: 'Access token' })
+  @ApiProperty({ description: 'Refresh token' })
   refreshToken!: string;
 }
 

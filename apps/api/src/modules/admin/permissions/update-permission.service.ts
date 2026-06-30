@@ -40,7 +40,8 @@ export class UpdatePermissionService {
       where: { id },
       data: {
         name: req.name,
-        slug: req.slug,
+        key: req.key,
+        module: req.module,
       },
     });
 

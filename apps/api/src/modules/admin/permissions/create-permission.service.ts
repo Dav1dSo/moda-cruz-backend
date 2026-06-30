@@ -22,7 +22,8 @@ export class CreatePermissionService {
       this.prismaService.permission.create({
         data: {
           name: req.name,
-          slug: req.slug,
+          key: req.key,
+          module: req.module,
         },
       }),
     ]);

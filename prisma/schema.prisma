@@ -7,897 +7,748 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum entity_type {
-  PESSOA_FíSICA
-  PESSOA_JURÍDICA
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+
+  @@map("user_status")
 }
 
-enum entity_status {
-  ATIVO
-  INATIVO
-  SUSPENSO
-  FALECIDO
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  VIP
+
+  @@map("customer_status")
 }
 
-enum entity_role_type {
-  MEMBRO
-  FORNECEDOR
-  CLIENTE
-  FUNCIONARIO
-  PASTOR
-  VOLUNTÁRIO
-  BENEFICIÁRIO
-  DOADOR
-  VISITANTE
-  COLABORADOR
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+
+  @@map("product_status")
 }
 
-enum entity_role_status {
-  ATIVO
-  INATIVO
-  SUSPENSO
+enum ProductBadge {
+  NOVO
+  EXCLUSIVO
+  BEST_SELLER
+
+  @@map("product_badge")
 }
 
-enum gender {
-  MASCULINO
-  FEMININO
+enum ProductFit {
+  CLASSIC_FIT
+  SLIM_FIT
+  SUPER_SLIM
+
+  @@map("product_fit")
 }
 
-enum marital_status {
-  SOLTEIRO
-  CASADO
-  DIVORCIADO
-  VIÚVO
-  SEPARADO
+enum ProductCondition {
+  NEW
+  SEMI_NEW
+  USED
+
+  @@map("product_condition")
 }
 
-enum blood_type {
-  A_POSITIVO
-  A_NEGATIVO
-  B_POSITIVO
-  B_NEGATIVO
-  AB_POSITIVO
-  AB_NEGATIVO
-  O_POSITIVO
-  O_NEGATIVO
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELED
+
+  @@map("order_status")
 }
 
-enum disability_type {
-  FISICA
-  VISUAL
-  AUDITIVA
-  INTELECTUAL
-  COGNITIVA
-  PSICOSSOCIAL
-  FALA_LINGUAGEM
-  SURDOCEGUEIRA
-  TRANSTORNO_ESPECTRO_AUTISTA
-  MULTIPLA
-  OUTRA
+enum PaymentStatus {
+  PAID
+  PENDING
+  FAILED
+
+  @@map("payment_status")
 }
 
-enum company_size {
-  MEI
-  ME
-  PEQUENA
-  MEDIA
-  GRANDE
+enum ShipmentStatus {
+  WAITING
+  PREPARING
+  SHIPPED
+  DELIVERED
+
+  @@map("shipment_status")
 }
 
-enum entity_document_type {
-  RG
-  CNH
-  PASSAPORTE
-  CARTEIRA_TRABALHO
-  CERTIFICADO_MILITAR
-  TITULO_ELEITOR
-  CERTIDÃO_NASCIMENTO
-  CERTIDÃO_CASAMENTO
-  COMPROVANTE_RESIDÊNCIA
-  EXTRATO_BANCÁRIO
-  COMPROVANTE_RENDA
-  CONTRATO
-  CERTIFICADO_ESCOLAR
-  OUTRO
+enum PaymentMethod {
+  PIX
+  CARD
+  BOLETO
+  CASH
+
+  @@map("payment_method")
 }
 
-enum contact_type {
-  EMAIL
-  CELULAR
-  TELEFONE
+enum ReturnStatus {
+  REQUESTED
+  APPROVED
+  LABEL_GENERATED
+  RECEIVED
+  REJECTED
+
+  @@map("return_status")
+}
+
+enum PromotionStatus {
+  ACTIVE
+  DRAFT
+  ENDED
+
+  @@map("promotion_status")
+}
+
+enum PromotionPlacement {
+  HOME
+  CATALOG
+  GENERAL
+
+  @@map("promotion_placement")
+}
+
+enum PromotionMediaType {
+  IMAGE
+  GIF
+
+  @@map("promotion_media_type")
+}
+
+enum SupportConversationState {
+  AUTOMATED
+  WAITING_HUMAN
+  HUMAN
+  RESOLVED
+
+  @@map("support_conversation_state")
+}
+
+enum SupportConversationSource {
+  SITE
+  ADMIN
   WHATSAPP
-  TELEGRAM
-  OUTRO
+
+  @@map("support_conversation_source")
 }
 
-enum education_level {
-  FUNDAMENTAL
-  MÉDIO
-  TÉCNICO
-  GRADUAÇÃO
-  POS_GRADUAÇÃO
-  MESTRADO
-  DOUTORADO
+enum SupportConversationPriority {
+  LOW
+  NORMAL
+  HIGH
+
+  @@map("support_conversation_priority")
 }
 
-enum education_status {
-  EM_ANDAMENTO
-  COMPLETO
-  INCOMPLETO
-  SUSPENSO
+enum ChatMessageRole {
+  USER
+  ASSISTANT
+  HUMAN
+  SYSTEM
+
+  @@map("chat_message_role")
 }
 
-enum user_status_change_type {
-  ATIVADO
-  DESATIVADO
+enum ChatMessageStatus {
+  SENT
+  DELIVERED
+  TYPING
+  READ
+
+  @@map("chat_message_status")
 }
 
-enum management_account_type {
-  RECEITA
-  DESPESA
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  APPROVE
+  LOGIN
+  LOGOUT
+  EXPORT
+  ASSIGN
+  OTHER
+
+  @@map("audit_action")
 }
 
-enum asaas_environment {
-  SANDBOX
-  PRODUÇÃO
+enum PaymentProvider {
+  STRIPE
+  PAGSEGURO
+  MERCADO_PAGO
+  MANUAL
+  MOCK
+
+  @@map("payment_provider")
 }
-
-enum asaas_pix_key_type {
-  CPF
-  CNPJ
-  EMAIL
-  TELEFONE
-  ALEATÓRIA
-}
-
-enum asaas_integration_status {
-  NÃO_CONFIGURADO
-  CONECTADO
-  ERRO_CONEXÃO
-}
-
-// ===== MODULE: GEOGRAPHY AND ADDRESS =====
-
-model Country {
-  id         Int      @id @default(autoincrement())
-  name       String   @db.VarChar(100)
-  code       String?  @unique @db.Char(3)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  states        State[]
-  nationalities Nationality[]
-
-  @@map("country")
-}
-
-model State {
-  id         Int      @id @default(autoincrement())
-  country_id Int
-  name       String   @db.VarChar(100)
-  code       String?  @db.Char(2)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  country Country @relation(fields: [country_id], references: [id], onDelete: Restrict)
-  cities  City[]
-
-  @@unique([country_id, code])
-  @@index([country_id])
-  @@map("state")
-}
-
-model City {
-  id         Int      @id @default(autoincrement())
-  state_id   Int
-  name       String   @db.VarChar(150)
-  ibge_code  String?  @unique @db.VarChar(10)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  state         State           @relation(fields: [state_id], references: [id], onDelete: Restrict)
-  addresses     Address[]
-  birth_records NaturalPerson[] @relation("BirthCity")
-
-  @@index([state_id, name])
-  @@map("city")
-}
-
-model Address {
-  id           Int      @id @default(autoincrement())
-  city_id      Int
-  postal_code  String?  @db.Char(8)
-  street       String   @db.VarChar(255)
-  number       String?  @db.VarChar(20)
-  complement   String?  @db.VarChar(255)
-  neighborhood String?  @db.VarChar(100)
-  latitude     Decimal? @db.Decimal(10, 7)
-  longitude    Decimal? @db.Decimal(10, 7)
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
-
-  city         City          @relation(fields: [city_id], references: [id], onDelete: Restrict)
-  congregation Congregation?
-  entity       Entity?
-
-  @@index([city_id])
-  @@index([postal_code])
-  @@map("address")
-}
-
-model Nationality {
-  id         Int      @id @default(autoincrement())
-  country_id Int?
-  name       String   @unique @db.VarChar(100)
-  gentile    String?  @db.VarChar(100)
-  iso_code   String?  @db.Char(3)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  country         Country?        @relation(fields: [country_id], references: [id], onDelete: SetNull)
-  natural_persons NaturalPerson[]
-
-  @@index([country_id])
-  @@map("nationality")
-}
-
-model Occupation {
-  id         Int      @id @default(autoincrement())
-  name       String   @unique @db.VarChar(150)
-  is_active  Boolean  @default(true)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  professions PersonProfession[]
-
-  @@map("occupation")
-}
-
-// ===== MODULE: ORGANIZATION AND CONGREGATION =====
-
-model Organization {
-  id                     Int       @id @default(autoincrement())
-  cnpj                   String    @unique @db.Char(14)
-  legal_name             String    @db.VarChar(255)
-  state_registration     String?   @db.VarChar(50)
-  municipal_registration String?   @db.VarChar(50)
-  is_active              Boolean   @default(true)
-  notes                  String?
-  created_at             DateTime  @default(now())
-  updated_at             DateTime  @updatedAt
-  deleted_at             DateTime?
-
-  areas               CongregationArea[]
-  sectors             CongregationSector[]
-  congregations       Congregation[]
-  entities            Entity[]
-  user_accesses       UserOrganization[]
-  profiles            Profile[]
-  member_statuses     MemberStatus[]
-  member_roles        CongregationMemberRole[]
-  document_types      DocumentType[]
-  church_positions    EcclesiasticalPosition[]
-  entity_roles        EntityRole[]
-  management_accounts ManagementAccount[]
-  asaas_integration   OrganizationAsaasIntegration?
-
-  @@index([is_active])
-  @@index([deleted_at])
-  @@map("organization")
-}
-
-model CongregationArea {
-  id              Int       @id @default(autoincrement())
-  organization_id Int
-  name            String    @db.VarChar(150)
-  description     String?
-  is_active       Boolean   @default(true)
-  created_at      DateTime  @default(now())
-  updated_at      DateTime  @updatedAt
-  deleted_at      DateTime?
-
-  organization  Organization         @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  sectors       CongregationSector[]
-  congregations Congregation[]
-
-  @@unique([organization_id, name])
-  @@unique([id, organization_id])
-  @@index([organization_id, is_active])
-  @@map("congregation_area")
-}
-
-model CongregationSector {
-  id              Int       @id @default(autoincrement())
-  organization_id Int
-  area_id         Int
-  name            String    @db.VarChar(150)
-  description     String?
-  is_active       Boolean   @default(true)
-  created_at      DateTime  @default(now())
-  updated_at      DateTime  @updatedAt
-  deleted_at      DateTime?
-
-  organization  Organization     @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  area          CongregationArea @relation(fields: [area_id], references: [id], onDelete: Restrict)
-  congregations Congregation[]
-
-  @@unique([organization_id, name])
-  @@unique([id, organization_id])
-  @@index([organization_id, area_id])
-  @@map("congregation_sector")
-}
-
-model Congregation {
-  id                          Int       @id @default(autoincrement())
-  organization_id             Int?
-  parent_id                   Int?
-  area_id                     Int?
-  sector_id                   Int?
-  address_id                  Int?      @unique
-  pastor_entity_id            Int?
-  name                        String    @db.VarChar(255)
-  acronym                     String?   @db.VarChar(50)
-  description                 String?
-  cnpj                        String?   @unique @db.Char(14)
-  foundation_date             DateTime? @db.Date
-  population_capacity         Int?
-  phone                       String?   @db.VarChar(11)
-  email                       String?   @db.VarChar(255)
-  logo_path                   String?   @db.VarChar(500)
-  public_checkout_token       String?   @unique @db.VarChar(64)
-  is_public_checkout_enabled  Boolean   @default(false)
-  checkout_token_generated_at DateTime?
-  is_active                   Boolean   @default(true)
-  created_at                  DateTime  @default(now())
-  updated_at                  DateTime  @updatedAt
-  deleted_at                  DateTime?
-
-  organization                    Organization?                   @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  parent                          Congregation?                  @relation("CongregationHierarchy", fields: [parent_id], references: [id], onDelete: SetNull)
-  children                        Congregation[]                 @relation("CongregationHierarchy")
-  area                            CongregationArea?              @relation(fields: [area_id, organization_id], references: [id, organization_id])
-  sector                          CongregationSector?            @relation(fields: [sector_id, organization_id], references: [id, organization_id])
-  address                         Address?                       @relation(fields: [address_id], references: [id], onDelete: Restrict)
-  pastor                          Entity?                        @relation("CongregationPastor", fields: [pastor_entity_id], references: [id], onDelete: SetNull)
-  user_accesses                   UserOrganization[]
-  entity_roles                    EntityRole[]
-  member_ecclesiastical_positions MemberEcclesiasticalPosition[]
-  management_accounts             ManagementAccount[]
-
-  @@unique([organization_id, name])
-  @@unique([id, organization_id])
-  @@index([organization_id, is_active])
-  @@index([area_id])
-  @@index([sector_id])
-  @@index([parent_id])
-  @@map("congregation")
-}
-
-// ===== MODULE: ORGANIZATION FINANCIAL SETTINGS =====
-
-model ManagementAccount {
-  id              Int                     @id @default(autoincrement())
-  organization_id Int
-  congregation_id Int?
-  parent_id       Int?
-  code            String                  @db.VarChar(50)
-  name            String                  @db.VarChar(255)
-  type            management_account_type
-  is_analytic     Boolean                 @default(false)
-  is_active       Boolean                 @default(true)
-  created_at      DateTime                @default(now())
-  updated_at      DateTime                @updatedAt
-  deleted_at      DateTime?
-
-  organization Organization        @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  congregation Congregation?       @relation(fields: [congregation_id, organization_id], references: [id, organization_id], onDelete: Restrict)
-  parent       ManagementAccount?  @relation("ManagementAccountHierarchy", fields: [parent_id], references: [id], onDelete: Restrict)
-  children     ManagementAccount[] @relation("ManagementAccountHierarchy")
-
-  @@index([organization_id, type])
-  @@index([organization_id, code])
-  @@index([congregation_id])
-  @@index([parent_id])
-  @@index([deleted_at])
-  @@map("management_account")
-}
-
-model OrganizationAsaasIntegration {
-  id                       Int                      @id @default(autoincrement())
-  organization_id          Int                      @unique
-  access_token             String?
-  wallet_id                String?                  @db.VarChar(100)
-  pix_key                  String?                  @db.VarChar(255)
-  pix_key_type             asaas_pix_key_type?
-  status                   asaas_integration_status @default(NÃO_CONFIGURADO)
-  created_at               DateTime                 @default(now())
-  updated_at               DateTime                 @updatedAt
-  deleted_at               DateTime?
-
-  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-
-  @@index([status])
-  @@index([wallet_id])
-  @@index([pix_key])
-  @@index([deleted_at])
-  @@map("organization_asaas_integration")
-}
-
-// ===== MODULE: ENTITY =====
-
-model Entity {
-  id              Int           @id @default(autoincrement())
-  organization_id Int
-  address_id      Int?          @unique
-  type            entity_type
-  display_name    String        @db.VarChar(255)
-  status          entity_status @default(ATIVO)
-  notes           String?
-  created_at      DateTime      @default(now())
-  updated_at      DateTime      @updatedAt
-  deleted_at      DateTime?
-
-  organization             Organization                   @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  address                  Address?                       @relation(fields: [address_id], references: [id], onDelete: Restrict)
-  natural_person           NaturalPerson?
-  legal_person             LegalPerson?
-  contacts                 EntityContact[]
-  documents                EntityDocument[]
-  roles                    EntityRole[]
-  professions              PersonProfession[]
-  educations               PersonEducation[]
-  user                     User?
-  pastor_of                Congregation[]                 @relation("CongregationPastor")
-  ecclesiastical_positions MemberEcclesiasticalPosition[]
-
-  @@index([organization_id, type])
-  @@index([organization_id, display_name])
-  @@index([status])
-  @@index([deleted_at])
-  @@map("entity")
-}
-
-model NaturalPerson {
-  id                     Int             @id @default(autoincrement())
-  entity_id              Int             @unique
-  nationality_id         Int?
-  birth_city_id          Int?
-  full_name              String          @db.VarChar(255)
-  cpf                    String?         @unique @db.Char(11)
-  rg                     String?         @db.VarChar(20)
-  rg_issuer              String?         @db.VarChar(100)
-  rg_issue_date          DateTime?       @db.Date
-  birth_date             DateTime?       @db.Date
-  gender                 gender?
-  marital_status         marital_status?
-  spouse_name            String?         @db.VarChar(255)
-  blood_type             blood_type?
-  father_name            String?         @db.VarChar(255)
-  mother_name            String?         @db.VarChar(255)
-  has_disability         Boolean         @default(false)
-  disability_type        disability_type?
-  disability_description String?
-  photo_path             String?         @db.VarChar(500)
-  created_at             DateTime        @default(now())
-  updated_at             DateTime        @updatedAt
-
-  entity      Entity       @relation(fields: [entity_id], references: [id], onDelete: Restrict)
-  nationality Nationality? @relation(fields: [nationality_id], references: [id], onDelete: SetNull)
-  birth_city  City?        @relation("BirthCity", fields: [birth_city_id], references: [id], onDelete: SetNull)
-
-  @@index([full_name])
-  @@index([birth_date])
-  @@map("natural_person")
-}
-
-model LegalPerson {
-  id                     Int           @id @default(autoincrement())
-  entity_id              Int           @unique
-  legal_name             String        @db.VarChar(255)
-  trade_name             String?       @db.VarChar(255)
-  cnpj                   String?       @unique @db.Char(14)
-  state_registration     String?       @db.VarChar(50)
-  municipal_registration String?       @db.VarChar(50)
-  constitution_date      DateTime?     @db.Date
-  company_size           company_size?
-  legal_nature           String?       @db.VarChar(100)
-  logo_path              String?       @db.VarChar(500)
-  created_at             DateTime      @default(now())
-  updated_at             DateTime      @updatedAt
-
-  entity Entity @relation(fields: [entity_id], references: [id], onDelete: Restrict)
-
-  @@index([legal_name])
-  @@index([trade_name])
-  @@map("legal_person")
-}
-
-model EntityContact {
-  id          Int          @id @default(autoincrement())
-  entity_id   Int
-  type        contact_type
-  value       String       @db.VarChar(255)
-  description String?      @db.VarChar(100)
-  is_primary  Boolean      @default(false)
-  is_active   Boolean      @default(true)
-  is_verified Boolean      @default(false)
-  valid_from  DateTime?    @db.Date
-  valid_until DateTime?    @db.Date
-  notes       String?
-  created_at  DateTime     @default(now())
-  updated_at  DateTime     @updatedAt
-  deleted_at  DateTime?
-
-  entity Entity @relation(fields: [entity_id], references: [id], onDelete: Restrict)
-
-  @@index([entity_id, type])
-  @@index([value])
-  @@map("entity_contact")
-}
-
-model EntityDocument {
-  id              Int                  @id @default(autoincrement())
-  entity_id       Int
-  type            entity_document_type
-  document_number String?              @db.VarChar(50)
-  issuing_body    String?              @db.VarChar(100)
-  issue_date      DateTime?            @db.Date
-  expiry_date     DateTime?            @db.Date
-  file_path       String?              @db.VarChar(500)
-  file_name       String?              @db.VarChar(255)
-  mime_type       String?              @db.VarChar(100)
-  file_size       Int?
-  description     String?              @db.VarChar(255)
-  is_verified     Boolean              @default(false)
-  verified_at     DateTime?
-  is_active       Boolean              @default(true)
-  notes           String?
-  created_at      DateTime             @default(now())
-  updated_at      DateTime             @updatedAt
-  deleted_at      DateTime?
-
-  entity Entity @relation(fields: [entity_id], references: [id], onDelete: Restrict)
-
-  @@index([entity_id, type])
-  @@index([document_number])
-  @@index([expiry_date])
-  @@map("entity_document")
-}
-
-model EntityRole {
-  id              Int                @id @default(autoincrement())
-  entity_id       Int
-  organization_id Int
-  congregation_id Int?
-  type            entity_role_type
-  status          entity_role_status @default(ATIVO)
-  start_date      DateTime           @db.Date
-  end_date        DateTime?          @db.Date
-  notes           String?
-  created_at      DateTime           @default(now())
-  updated_at      DateTime           @updatedAt
-  deleted_at      DateTime?
-
-  entity                  Entity                 @relation(fields: [entity_id], references: [id], onDelete: Restrict)
-  organization            Organization           @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  congregation            Congregation?          @relation(fields: [congregation_id], references: [id], onDelete: Restrict)
-  member_details          MemberDetail?
-  member_role_assignments MemberRoleAssignment[]
-
-  @@unique([entity_id, type, organization_id, congregation_id])
-  @@index([organization_id, type])
-  @@index([congregation_id, type])
-  @@index([status])
-  @@map("entity_role")
-}
-
-model MemberStatus {
-  id              Int      @id @default(autoincrement())
-  organization_id Int
-  name            String   @db.VarChar(100)
-  description     String?
-  color           String?  @db.VarChar(20)
-  is_active       Boolean  @default(true)
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
-
-  organization Organization   @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  members      MemberDetail[]
-
-  @@unique([organization_id, name])
-  @@map("member_status")
-}
-
-model CongregationMemberRole {
-  id              Int      @id @default(autoincrement())
-  organization_id Int
-  name            String   @db.VarChar(100)
-  description     String?
-  is_active       Boolean  @default(true)
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
-
-  organization Organization           @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  assignments  MemberRoleAssignment[]
-
-  @@unique([organization_id, name])
-  @@map("congregation_member_role")
-}
-
-model DocumentType {
-  id               Int      @id @default(autoincrement())
-  organization_id  Int
-  name             String   @db.VarChar(100)
-  code             String?  @db.VarChar(50)
-  description      String?  @db.VarChar(500)
-  template_path    String?  @default("member") @db.VarChar(500)
-  template_content String?
-  background_image String?  @db.VarChar(500)
-  requires_spouse  Boolean  @default(false)
-  is_active        Boolean  @default(true)
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
-
-  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-
-  @@unique([organization_id, name])
-  @@unique([organization_id, code])
-  @@index([organization_id, is_active])
-  @@map("document_type")
-}
-
-model MemberDetail {
-  id                     Int       @id @default(autoincrement())
-  entity_role_id         Int       @unique
-  member_status_id       Int?
-  member_number          String?   @db.VarChar(50)
-  conversion_date        DateTime? @db.Date
-  water_baptism_date     DateTime? @db.Date
-  spirit_baptism_date    DateTime? @db.Date
-  reception_date         DateTime? @db.Date
-  member_since           DateTime? @db.Date
-  transfer_letter_number String?   @db.VarChar(50)
-  transferred_from       String?   @db.VarChar(255)
-  notes                  String?
-  created_at             DateTime  @default(now())
-  updated_at             DateTime  @updatedAt
-
-  entity_role   EntityRole    @relation(fields: [entity_role_id], references: [id], onDelete: Restrict)
-  member_status MemberStatus? @relation(fields: [member_status_id], references: [id], onDelete: Restrict)
-
-  @@index([member_status_id])
-  @@index([member_number])
-  @@map("member_detail")
-}
-
-model MemberRoleAssignment {
-  id                          Int       @id @default(autoincrement())
-  entity_role_id              Int
-  congregation_member_role_id Int
-  start_date                  DateTime? @db.Date
-  end_date                    DateTime? @db.Date
-  is_active                   Boolean   @default(true)
-  notes                       String?
-  created_at                  DateTime  @default(now())
-  updated_at                  DateTime  @updatedAt
-  deleted_at                  DateTime?
-
-  entity_role              EntityRole             @relation(fields: [entity_role_id], references: [id], onDelete: Restrict)
-  congregation_member_role CongregationMemberRole @relation(fields: [congregation_member_role_id], references: [id], onDelete: Restrict)
-
-  @@index([entity_role_id, is_active])
-  @@index([congregation_member_role_id])
-  @@map("member_role_assignment")
-}
-
-model PersonProfession {
-  id            Int       @id @default(autoincrement())
-  entity_id     Int
-  occupation_id Int
-  company       String?   @db.VarChar(255)
-  position      String?   @db.VarChar(150)
-  salary        Decimal?  @db.Decimal(10, 2)
-  start_date    DateTime? @db.Date
-  end_date      DateTime? @db.Date
-  is_current    Boolean   @default(false)
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
-
-  entity     Entity     @relation(fields: [entity_id], references: [id], onDelete: Restrict)
-  occupation Occupation @relation(fields: [occupation_id], references: [id], onDelete: Restrict)
-
-  @@index([entity_id])
-  @@index([occupation_id])
-  @@map("person_profession")
-}
-
-model PersonEducation {
-  id          Int               @id @default(autoincrement())
-  entity_id   Int
-  level       education_level
-  status      education_status? @default(COMPLETO)
-  institution String?           @db.VarChar(255)
-  course      String?           @db.VarChar(255)
-  start_year  Int?
-  end_year    Int?
-  created_at  DateTime          @default(now())
-  updated_at  DateTime          @updatedAt
-
-  entity Entity @relation(fields: [entity_id], references: [id], onDelete: Restrict)
-
-  @@index([entity_id])
-  @@index([level])
-  @@map("person_education")
-}
-
-// ===== MODULE: USERS AND ACCESS CONTROL =====
 
 model User {
-  id                   Int       @id @default(autoincrement())
-  entity_id            Int       @unique
-  name                 String    @db.VarChar(255)
-  phone                String    @db.VarChar(14)
-  email                String    @unique @db.VarChar(255)
-  password_hash        String    @db.VarChar(255)
-  is_active            Boolean   @default(true)
-  is_platform_admin    Boolean   @default(false)
-  must_change_password Boolean   @default(true)
-  profile_photo_path   String?   @db.VarChar(500)
-  last_login_at        DateTime?
-  created_at           DateTime  @default(now())
-  updated_at           DateTime  @updatedAt
-  deleted_at           DateTime?
+  id                Int       @id @default(autoincrement())
+  name              String    @db.VarChar(255)
+  email             String    @unique @db.VarChar(255)
+  phone             String?   @db.VarChar(32)
+  password_hash     String    @db.VarChar(255)
+  is_platform_admin Boolean   @default(false)
+  is_active         Boolean   @default(true)
+  deleted_at        DateTime?
+  email_verified_at DateTime?
+  last_login_at     DateTime?
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
 
-  entity                           Entity                         @relation(fields: [entity_id], references: [id], onDelete: Restrict)
-  user_organizations               UserOrganization[]             @relation("UserOrganizationAccess")
-  invitations_sent                 UserOrganization[]             @relation("UserOrganizationInviter")
-  profiles                         UserProfile[]
-  status_changes                   UserStatusChange[]             @relation("ChangedUser")
-  status_changes_made              UserStatusChange[]             @relation("StatusChangedBy")
-  ecclesiastical_positions_created MemberEcclesiasticalPosition[]
+  profiles               UserProfile[]
+  assigned_conversations SupportConversation[] @relation("conversation_assigned_user")
+  sent_messages          SupportMessage[]      @relation("message_sender_user")
+  audit_logs             AuditLog[]            @relation("audit_actor_user")
+  requested_returns      ReturnRequest[]       @relation("return_request_requested_by_user")
+  reviewed_returns       ReturnRequest[]       @relation("return_review_user")
+  customer               Customer?             @relation("customer_user")
+  orders                 Order[]
+  orderEvents            OrderEvent[]
+  supportConversations   SupportConversation[]
 
-  @@index([is_active])
-  @@index([deleted_at])
-  @@map("user")
-}
-
-model UserOrganization {
-  id                    Int       @id @default(autoincrement())
-  organization_id       Int
-  user_id               Int
-  congregation_id       Int
-  invited_by_id         Int?
-  is_active             Boolean   @default(false)
-  verified_at           DateTime?
-  invited_at            DateTime?
-  invitation_token_hash String?   @unique @db.Char(64)
-  invitation_expires_at DateTime?
-  created_at            DateTime  @default(now())
-  updated_at            DateTime  @updatedAt
-  deleted_at            DateTime?
-
-  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  user         User         @relation("UserOrganizationAccess", fields: [user_id], references: [id], onDelete: Restrict)
-  congregation Congregation @relation(fields: [congregation_id, organization_id], references: [id, organization_id], onDelete: Restrict)
-  invited_by   User?        @relation("UserOrganizationInviter", fields: [invited_by_id], references: [id], onDelete: SetNull)
-
-  @@unique([organization_id, user_id, congregation_id])
-  @@index([user_id, is_active])
-  @@index([organization_id, congregation_id])
-  @@map("user_organization")
-}
-
-model UserStatusChange {
-  id            Int                     @id @default(autoincrement())
-  user_id       Int
-  changed_by_id Int
-  status        user_status_change_type
-  reason        String?
-  created_at    DateTime                @default(now())
-
-  user       User @relation("ChangedUser", fields: [user_id], references: [id], onDelete: Restrict)
-  changed_by User @relation("StatusChangedBy", fields: [changed_by_id], references: [id], onDelete: Restrict)
-
-  @@index([user_id, created_at])
-  @@map("user_status_change")
+  @@map("users")
 }
 
 model Profile {
-  id              Int      @id @default(autoincrement())
-  organization_id Int
-  name            String   @db.VarChar(100)
-  is_active       Boolean  @default(true)
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  name        String   @unique @db.VarChar(120)
+  description String?  @db.Text
+  color       String   @default("#3F619C") @db.VarChar(32)
+  scope       String   @default("operacao") @db.VarChar(32)
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
-  organization Organization        @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  users        UserProfile[]
-  permissions  ProfilePermission[]
+  permissions ProfilePermission[]
+  users       UserProfile[]
 
-  @@unique([organization_id, name])
-  @@map("profile")
+  @@map("profiles")
 }
 
 model Permission {
   id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(150)
-  slug        String   @unique @db.VarChar(150)
-  description String?
+  key         String   @unique @db.VarChar(120)
+  name        String   @db.VarChar(160)
+  description String?  @db.Text
+  module      String   @db.VarChar(80)
+  is_critical Boolean  @default(false)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
   profiles ProfilePermission[]
 
-  @@map("permission")
+  @@index([module])
+  @@map("permissions")
 }
 
 model ProfilePermission {
-  id            Int @id @default(autoincrement())
-  profile_id    Int
+  id            Int      @id @default(autoincrement())
+  profileId     Int
   permission_id Int
+  created_at    DateTime @default(now())
 
-  profile    Profile    @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  profile    Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
   permission Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
 
-  @@unique([profile_id, permission_id])
-  @@map("profile_permission")
+  @@unique([profileId, permission_id])
+  @@index([permission_id])
+  @@map("profile_permissions")
 }
 
 model UserProfile {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  profileId   Int
+  assigned_at DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, profileId])
+  @@index([profileId])
+  @@map("user_profiles")
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(120)
+  slug        String   @unique @db.VarChar(140)
+  description String?  @db.Text
+  image_url   String?  @db.Text
+  sort_order  Int      @default(0)
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id                Int               @id @default(autoincrement())
+  category_id       Int
+  slug              String            @unique @db.VarChar(160)
+  name              String            @db.VarChar(255)
+  sku               String?           @unique @db.VarChar(120)
+  short_description String?           @db.VarChar(255)
+  description       String?           @db.Text
+  price             Decimal           @db.Decimal(12, 2)
+  old_price         Decimal?          @db.Decimal(12, 2)
+  cost_price        Decimal?          @db.Decimal(12, 2)
+  rating            Float             @default(0)
+  review_count      Int               @default(0)
+  badge             ProductBadge?
+  fit               ProductFit?
+  condition         ProductCondition?
+  fabric            String?           @db.VarChar(120)
+  is_featured       Boolean           @default(false)
+  is_active         Boolean           @default(true)
+  status            ProductStatus     @default(PUBLISHED)
+  created_at        DateTime          @default(now())
+  updated_at        DateTime          @updatedAt
+
+  category     Category            @relation(fields: [category_id], references: [id], onDelete: Restrict)
+  colors       ProductColor[]
+  images       ProductImage[]
+  variants     ProductVariant[]
+  reviews      ProductReview[]
+  order_items  OrderItem[]
+  return_items ReturnRequestItem[]
+
+  @@index([category_id])
+  @@map("products")
+}
+
+model ProductColor {
   id         Int      @id @default(autoincrement())
-  user_id    Int
-  profile_id Int
+  product_id Int
+  name       String   @db.VarChar(80)
+  hex        String   @db.VarChar(16)
+  sort_order Int      @default(0)
+  is_active  Boolean  @default(true)
   created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  profile Profile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  product  Product          @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  variants ProductVariant[]
 
-  @@unique([user_id, profile_id])
-  @@map("user_profile")
+  @@unique([product_id, name])
+  @@index([product_id])
+  @@map("product_colors")
 }
 
-// ===== MODULE: ECCLESIASTICAL POSITIONS =====
+model ProductImage {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  url        String   @db.Text
+  alt        String?  @db.VarChar(255)
+  sort_order Int      @default(0)
+  is_primary Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-model EcclesiasticalPosition {
-  id              Int      @id @default(autoincrement())
-  organization_id Int
-  name            String   @db.VarChar(150)
-  description     String?
-  hierarchy_level Int      @default(0)
-  is_active       Boolean  @default(true)
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
-  organization Organization                   @relation(fields: [organization_id], references: [id], onDelete: Restrict)
-  members      MemberEcclesiasticalPosition[]
-
-  @@unique([organization_id, name])
-  @@index([organization_id, hierarchy_level])
-  @@map("ecclesiastical_position")
+  @@index([product_id])
+  @@map("product_images")
 }
 
-model MemberEcclesiasticalPosition {
-  id                         Int       @id @default(autoincrement())
-  congregation_id            Int
-  entity_id                  Int
-  ecclesiastical_position_id Int
-  created_by_id              Int?
-  ordination_date            DateTime? @db.Date
-  start_date                 DateTime? @db.Date
-  end_date                   DateTime? @db.Date
-  is_active                  Boolean   @default(true)
-  notes                      String?
-  created_at                 DateTime  @default(now())
-  updated_at                 DateTime  @updatedAt
-  deleted_at                 DateTime?
+model ProductVariant {
+  id               Int      @id @default(autoincrement())
+  product_id       Int
+  product_color_id Int
+  size             String   @db.VarChar(32)
+  sku              String   @unique @db.VarChar(120)
+  price            Decimal? @db.Decimal(12, 2)
+  stock            Int      @default(0)
+  reserved_stock   Int      @default(0)
+  sort_order       Int      @default(0)
+  is_active        Boolean  @default(true)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
 
-  congregation            Congregation           @relation(fields: [congregation_id], references: [id], onDelete: Restrict)
-  entity                  Entity                 @relation(fields: [entity_id], references: [id], onDelete: Restrict)
-  ecclesiastical_position EcclesiasticalPosition @relation(fields: [ecclesiastical_position_id], references: [id], onDelete: Restrict)
-  created_by              User?                  @relation(fields: [created_by_id], references: [id], onDelete: SetNull)
+  product     Product      @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  color       ProductColor @relation(fields: [product_color_id], references: [id], onDelete: Cascade)
+  order_items OrderItem[]
 
-  @@index([congregation_id, is_active])
-  @@index([entity_id, is_active])
-  @@index([ecclesiastical_position_id])
-  @@map("member_ecclesiastical_position")
+  @@unique([product_id, product_color_id, size])
+  @@index([product_id])
+  @@index([product_color_id])
+  @@map("product_variants")
+}
+
+model ProductReview {
+  id            Int      @id @default(autoincrement())
+  product_id    Int
+  customer_id   Int?
+  name          String   @db.VarChar(120)
+  email         String?  @db.VarChar(255)
+  rating        Int
+  title         String?  @db.VarChar(160)
+  content       String   @db.Text
+  status        String   @default("PENDING") @db.VarChar(32)
+  helpful_count Int      @default(0)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  product  Product   @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  customer Customer? @relation(fields: [customer_id], references: [id], onDelete: SetNull)
+
+  @@index([product_id])
+  @@map("product_reviews")
+}
+
+model Customer {
+  id             Int            @id @default(autoincrement())
+  code           String         @unique @db.VarChar(32)
+  name           String         @db.VarChar(255)
+  email          String?        @db.VarChar(255)
+  phone          String?        @db.VarChar(32)
+  document       String?        @db.VarChar(32)
+  status         CustomerStatus @default(ACTIVE)
+  total_orders   Int            @default(0)
+  total_spent    Decimal        @default(0.0) @db.Decimal(12, 2)
+  average_ticket Decimal        @default(0.0) @db.Decimal(12, 2)
+  tags           String[]
+  notes          String?        @db.Text
+  registered_at  DateTime       @default(now())
+  last_order_at  DateTime?
+  user_id        Int?           @unique
+
+  user          User?                 @relation("customer_user", fields: [user_id], references: [id], onDelete: SetNull)
+  addresses     CustomerAddress[]
+  orders        Order[]
+  reviews       ProductReview[]
+  conversations SupportConversation[]
+  returns       ReturnRequest[]
+
+  @@map("customers")
+}
+
+model CustomerAddress {
+  id          Int      @id @default(autoincrement())
+  customer_id Int
+  label       String   @db.VarChar(80)
+  street      String   @db.VarChar(255)
+  number      String?  @db.VarChar(32)
+  complement  String?  @db.VarChar(120)
+  district    String?  @db.VarChar(120)
+  city        String   @db.VarChar(120)
+  state       String   @db.VarChar(32)
+  zip_code    String   @db.VarChar(16)
+  is_primary  Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  customer Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+
+  @@index([customer_id])
+  @@map("customer_addresses")
+}
+
+model Order {
+  id                  Int            @id @default(autoincrement())
+  customer_id         Int?
+  user_id             Int?
+  number              String         @unique @db.VarChar(32)
+  status              OrderStatus    @default(PENDING)
+  payment_status      PaymentStatus  @default(PENDING)
+  shipment_status     ShipmentStatus @default(WAITING)
+  channel             String         @db.VarChar(32)
+  payment_method      PaymentMethod?
+  subtotal            Decimal        @db.Decimal(12, 2)
+  discount            Decimal        @default(0.0) @db.Decimal(12, 2)
+  shipping            Decimal        @default(0.0) @db.Decimal(12, 2)
+  total               Decimal        @db.Decimal(12, 2)
+  coupon_code         String?        @db.VarChar(32)
+  notes               String?        @db.Text
+  shipping_name       String?        @db.VarChar(255)
+  shipping_email      String?        @db.VarChar(255)
+  shipping_phone      String?        @db.VarChar(32)
+  shipping_zip_code   String?        @db.VarChar(16)
+  shipping_street     String?        @db.VarChar(255)
+  shipping_number     String?        @db.VarChar(32)
+  shipping_complement String?        @db.VarChar(120)
+  shipping_district   String?        @db.VarChar(120)
+  shipping_city       String?        @db.VarChar(120)
+  shipping_state      String?        @db.VarChar(32)
+  tracking_code       String?        @db.VarChar(120)
+  tracking_url        String?        @db.Text
+  placed_at           DateTime?
+  paid_at             DateTime?
+  created_at          DateTime       @default(now())
+  updated_at          DateTime       @updatedAt
+
+  customer             Customer?             @relation(fields: [customer_id], references: [id], onDelete: SetNull)
+  user                 User?                 @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  items                OrderItem[]
+  events               OrderEvent[]
+  payment              PaymentTransaction?
+  shipment             Shipment?
+  returns              ReturnRequest[]
+  supportConversations SupportConversation[]
+
+  @@index([customer_id])
+  @@index([user_id])
+  @@map("orders")
+}
+
+model OrderItem {
+  id                 Int      @id @default(autoincrement())
+  order_id           Int
+  product_id         Int
+  product_variant_id Int?
+  product_name       String   @db.VarChar(255)
+  product_sku        String?  @db.VarChar(120)
+  color_name         String?  @db.VarChar(80)
+  size_label         String?  @db.VarChar(32)
+  image_url          String?  @db.Text
+  quantity           Int
+  unit_price         Decimal  @db.Decimal(12, 2)
+  total              Decimal  @db.Decimal(12, 2)
+  created_at         DateTime @default(now())
+
+  order        Order               @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  product      Product             @relation(fields: [product_id], references: [id], onDelete: Restrict)
+  variant      ProductVariant?     @relation(fields: [product_variant_id], references: [id], onDelete: SetNull)
+  return_items ReturnRequestItem[]
+
+  @@index([order_id])
+  @@index([product_id])
+  @@index([product_variant_id])
+  @@map("order_items")
+}
+
+model OrderEvent {
+  id            Int          @id @default(autoincrement())
+  order_id      Int
+  status        OrderStatus?
+  description   String       @db.Text
+  actor_type    String       @db.VarChar(32)
+  actor_user_id Int?
+  metadata      Json?
+  created_at    DateTime     @default(now())
+
+  order      Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  actor_user User? @relation(fields: [actor_user_id], references: [id], onDelete: SetNull)
+
+  @@index([order_id])
+  @@index([actor_user_id])
+  @@map("order_events")
+}
+
+model PaymentTransaction {
+  id            Int             @id @default(autoincrement())
+  order_id      Int             @unique
+  method        PaymentMethod
+  status        PaymentStatus   @default(PENDING)
+  provider      PaymentProvider @default(MOCK)
+  amount        Decimal         @db.Decimal(12, 2)
+  installments  Int?
+  pix_code      String?         @db.Text
+  pix_qr_code   String?         @db.Text
+  boleto_url    String?         @db.Text
+  card_brand    String?         @db.VarChar(32)
+  card_last4    String?         @db.VarChar(8)
+  card_holder   String?         @db.VarChar(255)
+  authorized_at DateTime?
+  captured_at   DateTime?
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
+
+  order Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  @@map("payment_transactions")
+}
+
+model Shipment {
+  id            Int            @id @default(autoincrement())
+  order_id      Int            @unique
+  carrier       String?        @db.VarChar(120)
+  service_level String?        @db.VarChar(120)
+  tracking_code String?        @db.VarChar(120)
+  tracking_url  String?        @db.Text
+  label_code    String?        @db.VarChar(120)
+  label_url     String?        @db.Text
+  status        ShipmentStatus @default(WAITING)
+  shipped_at    DateTime?
+  delivered_at  DateTime?
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+
+  order Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  @@map("shipments")
+}
+
+model ReturnRequest {
+  id                   Int          @id @default(autoincrement())
+  order_id             Int
+  customer_id          Int
+  requested_by_user_id Int?
+  reviewed_by_user_id  Int?
+  order_number         String       @db.VarChar(32)
+  reason               String       @db.Text
+  details              String?      @db.Text
+  status               ReturnStatus @default(REQUESTED)
+  label_code           String?      @db.VarChar(120)
+  label_url            String?      @db.Text
+  requested_at         DateTime     @default(now())
+  expires_at           DateTime
+  reviewed_at          DateTime?
+  created_at           DateTime     @default(now())
+  updated_at           DateTime     @updatedAt
+
+  order             Order               @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  customer          Customer            @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  requested_by_user User?               @relation("return_request_requested_by_user", fields: [requested_by_user_id], references: [id], onDelete: SetNull)
+  reviewed_by_user  User?               @relation("return_review_user", fields: [reviewed_by_user_id], references: [id], onDelete: SetNull)
+  items             ReturnRequestItem[]
+
+  @@index([order_id])
+  @@index([customer_id])
+  @@map("return_requests")
+}
+
+model ReturnRequestItem {
+  id                Int      @id @default(autoincrement())
+  return_request_id Int
+  order_item_id     Int?
+  product_id        Int?
+  product_name      String   @db.VarChar(255)
+  variant_label     String?  @db.VarChar(120)
+  quantity          Int
+  unit_price        Decimal  @db.Decimal(12, 2)
+  created_at        DateTime @default(now())
+
+  return_request ReturnRequest @relation(fields: [return_request_id], references: [id], onDelete: Cascade)
+  order_item     OrderItem?    @relation(fields: [order_item_id], references: [id], onDelete: SetNull)
+  product        Product?      @relation(fields: [product_id], references: [id], onDelete: SetNull)
+
+  @@index([return_request_id])
+  @@index([order_item_id])
+  @@map("return_request_items")
+}
+
+model Promotion {
+  id         Int                @id @default(autoincrement())
+  title      String             @db.VarChar(160)
+  subtitle   String             @db.Text
+  badge      String             @db.VarChar(80)
+  cta_label  String             @db.VarChar(80)
+  cta_href   String             @db.VarChar(255)
+  media_url  String             @db.Text
+  media_type PromotionMediaType @default(IMAGE)
+  placement  PromotionPlacement @default(HOME)
+  status     PromotionStatus    @default(DRAFT)
+  starts_at  DateTime
+  ends_at    DateTime
+  priority   Int                @default(0)
+  audience   String             @db.VarChar(120)
+  created_at DateTime           @default(now())
+  updated_at DateTime           @updatedAt
+
+  @@index([status])
+  @@index([placement])
+  @@map("promotions")
+}
+
+model Coupon {
+  id                 Int       @id @default(autoincrement())
+  code               String    @unique @db.VarChar(32)
+  description        String?   @db.Text
+  discount_type      String    @db.VarChar(16)
+  discount_value     Decimal   @db.Decimal(12, 2)
+  minimum_purchase   Decimal?  @db.Decimal(12, 2)
+  max_uses           Int?
+  uses_count         Int       @default(0)
+  per_customer_limit Int?
+  starts_at          DateTime?
+  ends_at            DateTime?
+  status             String    @db.VarChar(32)
+  is_active          Boolean   @default(true)
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+
+  @@map("coupons")
+}
+
+model SupportConversation {
+  id                 Int                         @id @default(autoincrement())
+  customer_id        Int?
+  user_id            Int?
+  customer_name      String                      @db.VarChar(255)
+  customer_email     String                      @db.VarChar(255)
+  subject            String                      @db.VarChar(255)
+  source             SupportConversationSource   @default(SITE)
+  state              SupportConversationState    @default(AUTOMATED)
+  priority           SupportConversationPriority @default(NORMAL)
+  order_id           Int?
+  assigned_user_id   Int?
+  human_requested_at DateTime?
+  resolved_at        DateTime?
+  tags               String[]
+  last_message_at    DateTime?
+  created_at         DateTime                    @default(now())
+  updated_at         DateTime                    @updatedAt
+
+  customer      Customer?        @relation(fields: [customer_id], references: [id], onDelete: SetNull)
+  user          User?            @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  order         Order?           @relation(fields: [order_id], references: [id], onDelete: SetNull)
+  assigned_user User?            @relation("conversation_assigned_user", fields: [assigned_user_id], references: [id], onDelete: SetNull)
+  messages      SupportMessage[]
+
+  @@index([customer_id])
+  @@index([user_id])
+  @@index([assigned_user_id])
+  @@index([state])
+  @@map("support_conversations")
+}
+
+model SupportMessage {
+  id              Int               @id @default(autoincrement())
+  conversation_id Int
+  role            ChatMessageRole
+  status          ChatMessageStatus @default(DELIVERED)
+  content         String            @db.Text
+  sender_user_id  Int?
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
+
+  conversation SupportConversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+  sender_user  User?               @relation("message_sender_user", fields: [sender_user_id], references: [id], onDelete: SetNull)
+
+  @@index([conversation_id])
+  @@index([sender_user_id])
+  @@map("support_messages")
+}
+
+model AuditLog {
+  id            Int         @id @default(autoincrement())
+  actor_user_id Int?
+  actor_name    String      @db.VarChar(255)
+  action        AuditAction
+  entity_type   String      @db.VarChar(80)
+  entity_id     String      @db.VarChar(80)
+  before        Json?
+  after         Json?
+  metadata      Json?
+  ip_address    String?     @db.VarChar(64)
+  created_at    DateTime    @default(now())
+
+  actor_user User? @relation("audit_actor_user", fields: [actor_user_id], references: [id], onDelete: SetNull)
+
+  @@index([actor_user_id])
+  @@index([entity_type, entity_id])
+  @@map("audit_logs")
 }

@@ -20,6 +20,10 @@ export class AuthRefreshTokenService {
       const accessToken = await this.jwtService.signAsync({
         sub: payload.sub,
         email: payload.email,
+        permissions: payload.permissions ?? [],
+      }, {
+        secret: process.env.JWT_SECRET,
+        expiresIn: '15m',
       });
 
       return {

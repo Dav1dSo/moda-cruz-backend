@@ -20,8 +20,6 @@ export class AuthLoginService {
     try {
       const user = await this.userRepository.getUserByEmail(req.email);
 
-      console.log(user);
-
       if (!user || user.deleted_at != null) {
         throw new UnauthorizedException('Credenciais inválidas!');
       }
@@ -38,35 +36,57 @@ export class AuthLoginService {
       if (!passwordMatch) {
         throw new UnauthorizedException('Credenciais inválidas!');
       }
-      const selectionToken = await this.jwtService.signAsync(
+
+      const permissions = Array.from(
+        new Set(
+          user.profiles.flatMap((profileRelation) =>
+            profileRelation.profile.permissions.map(
+              (profilePermission) => profilePermission.permission.key,
+            ),
+          ),
+        ),
+      );
+
+      const accessToken = await this.jwtService.signAsync(
         {
           sub: user.id,
           email: user.email,
-          type: 'organization-selection',
+          permissions,
         },
         {
-          secret: process.env.JWT_SELECTION_SECRET,
-          expiresIn: '5m',
+          secret: process.env.JWT_SECRET,
+          expiresIn: '15m',
+        },
+      );
+
+      const refreshToken = await this.jwtService.signAsync(
+        {
+          sub: user.id,
+          email: user.email,
+          permissions,
+        },
+        {
+          secret: process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
+          expiresIn: '7d',
         },
       );
 
       return {
-        selection_token_organization: selectionToken,
+        accessToken,
+        refreshToken,
         user: {
           id: user.id,
           email: user.email,
           name: user.name,
-          is_plataform_admin: user.is_platform_admin,
+          is_platform_admin: user.is_platform_admin,
         },
-        avaliable_organizations: user.user_organizations.map(
-          (userOrganization) => ({
-            is_active: userOrganization.is_active,
-            organization_id: userOrganization.organization_id,
-            congregation_vinculo_id: userOrganization.congregation_id,
-            congregation_name: userOrganization.congregation.name,
-            organization_name: userOrganization.organization.legal_name,
-          }),
-        ),
+        profiles: user.profiles.map((profileRelation) => ({
+          id: profileRelation.profile.id,
+          name: profileRelation.profile.name,
+          permissions: profileRelation.profile.permissions.map(
+            (profilePermission) => profilePermission.permission.key,
+          ),
+        })),
       };
     } catch (error) {
       throw error;
