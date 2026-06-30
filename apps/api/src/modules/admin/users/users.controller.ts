@@ -48,9 +48,9 @@ export class UsersController {
     return await this.userServiceGetAll.execute(filters);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(AuthLoginRequired)
-  @Permissions('user.create')
+  // @ApiBearerAuth()
+  // @UseGuards(AuthLoginRequired)
+  // @Permissions('user.create')
   @Post()
   async create(
     @Body() userData: CreateUserRequestDTO,

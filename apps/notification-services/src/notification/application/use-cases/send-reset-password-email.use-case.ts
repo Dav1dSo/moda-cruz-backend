@@ -4,7 +4,7 @@ import { EmailService } from '../../email/email.service';
 import { resetPasswordTemplate } from '../../email/templates/reset-password-template-email';
 
 @Injectable()
-export class SendEmailUseCase {
+export class SendResetPasswordEmailUseCase {
   constructor(private readonly emailService: EmailService) {}
 
   async execute(event: ResetPasswordRequestedEvent): Promise<void> {

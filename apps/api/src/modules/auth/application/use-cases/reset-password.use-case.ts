@@ -15,7 +15,7 @@ export class ResetPasswordService {
     private readonly prismaService: PrismaService,
     private readonly jwtService: JwtService,
     @Inject(NOTIFICATIONS_CLIENT)
-    private readonly notificationsClient: ClientProxy,
+    private readonly brokerClient: ClientProxy,
   ) {}
 
   async execute(req: ResetPasswordRequestDTO) {
@@ -43,7 +43,7 @@ export class ResetPasswordService {
       const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${tokenResetPassword}`;
 
       await lastValueFrom(
-        this.notificationsClient.emit(RESET_PASSWORD_REQUESTED_EVENT, {
+        this.brokerClient.emit(RESET_PASSWORD_REQUESTED_EVENT, {
           to: user.email,
           name: user.name,
           resetLink,

@@ -1,38 +1,37 @@
-import { ConflictException, Injectable } from '@nestjs/common';
-import { PrismaService } from '@app/database';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
+import { lastValueFrom } from 'rxjs';
 import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
 import { CreateUserRequestDTO } from '../../dtos/request/user-request';
 import { UserRepository } from '../../domain/repositories/users.repository';
+import { NOTIFICATIONS_CLIENT } from '@contracts/auth/reset-password-requested.event';
+import { USER_CREATED_EVENT } from '@contracts/users/user-created.event';
+import type { UserCreatedEvent } from '@contracts/users/user-created.event';
 
 @Injectable()
 export class CreateUserUseCase {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    @Inject(NOTIFICATIONS_CLIENT)
+    private readonly brokerClient: ClientProxy,
+  ) {}
 
   async execute(req: CreateUserRequestDTO): Promise<ResponseDefaultDTO> {
-    try {
-      const user = await this.userRepository.getuserByEmail(req.email);
+    const user = await this.userRepository.getuserByEmail(req.email);
 
-      if (!user) {
-        throw new ConflictException('Email não permitido.');
-      }
-
-      await this.userRepository.createUser(req);
-
-      TODO: 'REALIZAR ENVIO DO EMAIL PRODUCER';
-      // await this.emailService.sendEmail(
-      //   req.email,
-      //   'Bem-vindo ao nosso serviço',
-      //   welcomeUserTemplate(
-      //     req.name,
-      //     '/verify-email',
-      //     new Date().getFullYear(),
-      //   ),
-      //   process.env.EMAIL_FROM || '',
-      // );
-
-      return { message: 'Usuaŕio criado com sucesso' };
-    } catch (error) {
-      throw error;
+    if (user) {
+      throw new ConflictException('Email já cadastrado.');
     }
+
+    await this.userRepository.createUser(req);
+
+    const event: UserCreatedEvent = {
+      to: req.email,
+      name: req.name,
+    };
+
+    this.brokerClient.emit(USER_CREATED_EVENT, event);
+
+    return { message: 'Usuário criado com sucesso' };
   }
 }

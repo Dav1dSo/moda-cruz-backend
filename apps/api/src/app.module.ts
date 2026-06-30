@@ -11,6 +11,7 @@ import { PermissionsModule } from './modules/admin/permissions/permissions.modul
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+
     DatabaseModule,
     AuthModule,
     UsersModule,

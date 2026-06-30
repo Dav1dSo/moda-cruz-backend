@@ -8,186 +8,133 @@ datasource db {
 }
 
 enum UserStatus {
-  ACTIVE
-  INACTIVE
+  ATIVO
+  INATIVO
 
   @@map("user_status")
 }
 
 enum CustomerStatus {
-  ACTIVE
-  INACTIVE
+  ATIVO
+  INATIVO
   VIP
 
   @@map("customer_status")
 }
 
 enum ProductStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
+  RASCUNHO
+  PUBLICADO
+  ARQUIVADO
 
   @@map("product_status")
 }
 
-enum ProductBadge {
-  NOVO
-  EXCLUSIVO
-  BEST_SELLER
-
-  @@map("product_badge")
-}
-
-enum ProductFit {
-  CLASSIC_FIT
-  SLIM_FIT
-  SUPER_SLIM
-
-  @@map("product_fit")
-}
-
-enum ProductCondition {
-  NEW
-  SEMI_NEW
-  USED
-
-  @@map("product_condition")
-}
-
 enum OrderStatus {
-  PENDING
-  PROCESSING
-  SHIPPED
-  DELIVERED
-  CANCELED
+  PENDENTE
+  EM_PROCESSAMENTO
+  EM_PREPARAÇÃO
+  ENVIADO
+  CANCELADO
+  ENTREGUE
 
   @@map("order_status")
 }
 
 enum PaymentStatus {
-  PAID
-  PENDING
-  FAILED
+  PAGO
+  PENDENTE
+  FALHOU
 
   @@map("payment_status")
 }
 
-enum ShipmentStatus {
-  WAITING
-  PREPARING
-  SHIPPED
-  DELIVERED
-
-  @@map("shipment_status")
-}
-
 enum PaymentMethod {
   PIX
-  CARD
+  CARTÃO
   BOLETO
-  CASH
 
   @@map("payment_method")
 }
 
 enum ReturnStatus {
-  REQUESTED
-  APPROVED
-  LABEL_GENERATED
-  RECEIVED
-  REJECTED
+  SOLICITADO
+  APROVADO
+  ETIQUETA_GERADA
+  RECEBIDO
+  REJEITADO
 
   @@map("return_status")
 }
 
 enum PromotionStatus {
-  ACTIVE
-  DRAFT
-  ENDED
+  ATIVO
+  RASCUNHO
+  ENCERRADO
 
   @@map("promotion_status")
 }
 
 enum PromotionPlacement {
-  HOME
-  CATALOG
-  GENERAL
+  INÍCIO
+  CATÁLOGO
+  GERAL
 
   @@map("promotion_placement")
 }
 
 enum PromotionMediaType {
-  IMAGE
+  IMAGEM
   GIF
 
   @@map("promotion_media_type")
 }
 
-enum SupportConversationState {
-  AUTOMATED
-  WAITING_HUMAN
-  HUMAN
-  RESOLVED
+enum SupportConversationStatus {
+  AUTOMATIZADO
+  AGUARDANDO_HUMANO
+  HUMANO
+  RESOLVIDO
 
   @@map("support_conversation_state")
 }
 
-enum SupportConversationSource {
-  SITE
-  ADMIN
-  WHATSAPP
-
-  @@map("support_conversation_source")
-}
-
 enum SupportConversationPriority {
-  LOW
+  BAIXO
   NORMAL
-  HIGH
+  ALTO
 
   @@map("support_conversation_priority")
 }
 
 enum ChatMessageRole {
-  USER
-  ASSISTANT
-  HUMAN
-  SYSTEM
+  USUÁRIO
+  ASSISTENTE
+  HUMANO
+  SISTEMA
 
   @@map("chat_message_role")
 }
 
 enum ChatMessageStatus {
-  SENT
-  DELIVERED
-  TYPING
-  READ
+  ENVIADO
+  ENTREGUE
+  DIGITANDO
+  LIDO
 
   @@map("chat_message_status")
 }
 
 enum AuditAction {
-  CREATE
-  UPDATE
-  DELETE
-  APPROVE
+  CRIAR
+  ATUALIZAR
+  EXCLUIR
+  APROVAR
   LOGIN
   LOGOUT
-  EXPORT
-  ASSIGN
-  OTHER
+  EXPORTAR
 
   @@map("audit_action")
-}
-
-enum PaymentProvider {
-  STRIPE
-  PAGSEGURO
-  MERCADO_PAGO
-  MANUAL
-  MOCK
-
-  @@map("payment_provider")
 }
 
 model User {
@@ -214,6 +161,7 @@ model User {
   orders                 Order[]
   orderEvents            OrderEvent[]
   supportConversations   SupportConversation[]
+  coupons                Coupon[]
 
   @@map("users")
 }
@@ -223,7 +171,6 @@ model Profile {
   name        String   @unique @db.VarChar(120)
   description String?  @db.Text
   color       String   @default("#3F619C") @db.VarChar(32)
-  scope       String   @default("operacao") @db.VarChar(32)
   is_active   Boolean  @default(true)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
@@ -265,10 +212,11 @@ model ProfilePermission {
 }
 
 model UserProfile {
-  id          Int      @id @default(autoincrement())
-  userId      Int
-  profileId   Int
-  assigned_at DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  profileId  Int
+  created_at DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
@@ -295,27 +243,18 @@ model Category {
 }
 
 model Product {
-  id                Int               @id @default(autoincrement())
-  category_id       Int
-  slug              String            @unique @db.VarChar(160)
-  name              String            @db.VarChar(255)
-  sku               String?           @unique @db.VarChar(120)
-  short_description String?           @db.VarChar(255)
-  description       String?           @db.Text
-  price             Decimal           @db.Decimal(12, 2)
-  old_price         Decimal?          @db.Decimal(12, 2)
-  cost_price        Decimal?          @db.Decimal(12, 2)
-  rating            Float             @default(0)
-  review_count      Int               @default(0)
-  badge             ProductBadge?
-  fit               ProductFit?
-  condition         ProductCondition?
-  fabric            String?           @db.VarChar(120)
-  is_featured       Boolean           @default(false)
-  is_active         Boolean           @default(true)
-  status            ProductStatus     @default(PUBLISHED)
-  created_at        DateTime          @default(now())
-  updated_at        DateTime          @updatedAt
+  id           Int           @id @default(autoincrement())
+  category_id  Int
+  name         String        @db.VarChar(255)
+  description  String?       @db.VarChar(255)
+  price        Decimal       @db.Decimal(12, 2)
+  cost_price   Decimal?      @db.Decimal(12, 2)
+  rating       Float         @default(0)
+  review_count Int           @default(0)
+  status       ProductStatus @default(PUBLICADO)
+  created_at   DateTime      @default(now())
+  updated_at   DateTime      @updatedAt
+  updated_by   Int
 
   category     Category            @relation(fields: [category_id], references: [id], onDelete: Restrict)
   colors       ProductColor[]
@@ -334,8 +273,6 @@ model ProductColor {
   product_id Int
   name       String   @db.VarChar(80)
   hex        String   @db.VarChar(16)
-  sort_order Int      @default(0)
-  is_active  Boolean  @default(true)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -352,8 +289,6 @@ model ProductImage {
   product_id Int
   url        String   @db.Text
   alt        String?  @db.VarChar(255)
-  sort_order Int      @default(0)
-  is_primary Boolean  @default(false)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -371,9 +306,6 @@ model ProductVariant {
   sku              String   @unique @db.VarChar(120)
   price            Decimal? @db.Decimal(12, 2)
   stock            Int      @default(0)
-  reserved_stock   Int      @default(0)
-  sort_order       Int      @default(0)
-  is_active        Boolean  @default(true)
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
 
@@ -388,18 +320,16 @@ model ProductVariant {
 }
 
 model ProductReview {
-  id            Int      @id @default(autoincrement())
-  product_id    Int
-  customer_id   Int?
-  name          String   @db.VarChar(120)
-  email         String?  @db.VarChar(255)
-  rating        Int
-  title         String?  @db.VarChar(160)
-  content       String   @db.Text
-  status        String   @default("PENDING") @db.VarChar(32)
-  helpful_count Int      @default(0)
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  product_id  Int
+  customer_id Int?
+  name        String   @db.VarChar(120)
+  email       String?  @db.VarChar(255)
+  rating      Int
+  title       String?  @db.VarChar(160)
+  content     String   @db.Text
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
   product  Product   @relation(fields: [product_id], references: [id], onDelete: Cascade)
   customer Customer? @relation(fields: [customer_id], references: [id], onDelete: SetNull)
@@ -409,21 +339,19 @@ model ProductReview {
 }
 
 model Customer {
-  id             Int            @id @default(autoincrement())
-  code           String         @unique @db.VarChar(32)
-  name           String         @db.VarChar(255)
-  email          String?        @db.VarChar(255)
-  phone          String?        @db.VarChar(32)
-  document       String?        @db.VarChar(32)
-  status         CustomerStatus @default(ACTIVE)
-  total_orders   Int            @default(0)
-  total_spent    Decimal        @default(0.0) @db.Decimal(12, 2)
-  average_ticket Decimal        @default(0.0) @db.Decimal(12, 2)
-  tags           String[]
-  notes          String?        @db.Text
-  registered_at  DateTime       @default(now())
-  last_order_at  DateTime?
-  user_id        Int?           @unique
+  id            Int            @id @default(autoincrement())
+  user_id       Int?           @unique
+  code          String         @unique @db.VarChar(32)
+  name          String         @db.VarChar(255)
+  email         String?        @db.VarChar(255)
+  phone         String?        @db.VarChar(32)
+  document      String?        @db.VarChar(32)
+  status        CustomerStatus @default(ATIVO)
+  total_orders  Int            @default(0)
+  total_spent   Decimal        @default(0.0) @db.Decimal(12, 2)
+  notes         String?        @db.Text
+  registered_at DateTime       @default(now())
+  last_order_at DateTime?
 
   user          User?                 @relation("customer_user", fields: [user_id], references: [id], onDelete: SetNull)
   addresses     CustomerAddress[]
@@ -438,7 +366,6 @@ model Customer {
 model CustomerAddress {
   id          Int      @id @default(autoincrement())
   customer_id Int
-  label       String   @db.VarChar(80)
   street      String   @db.VarChar(255)
   number      String?  @db.VarChar(32)
   complement  String?  @db.VarChar(120)
@@ -446,7 +373,6 @@ model CustomerAddress {
   city        String   @db.VarChar(120)
   state       String   @db.VarChar(32)
   zip_code    String   @db.VarChar(16)
-  is_primary  Boolean  @default(false)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
@@ -461,10 +387,8 @@ model Order {
   customer_id         Int?
   user_id             Int?
   number              String         @unique @db.VarChar(32)
-  status              OrderStatus    @default(PENDING)
-  payment_status      PaymentStatus  @default(PENDING)
-  shipment_status     ShipmentStatus @default(WAITING)
-  channel             String         @db.VarChar(32)
+  status              OrderStatus    @default(PENDENTE)
+  payment_status      PaymentStatus  @default(PENDENTE)
   payment_method      PaymentMethod?
   subtotal            Decimal        @db.Decimal(12, 2)
   discount            Decimal        @default(0.0) @db.Decimal(12, 2)
@@ -484,7 +408,6 @@ model Order {
   shipping_state      String?        @db.VarChar(32)
   tracking_code       String?        @db.VarChar(120)
   tracking_url        String?        @db.Text
-  placed_at           DateTime?
   paid_at             DateTime?
   created_at          DateTime       @default(now())
   updated_at          DateTime       @updatedAt
@@ -504,19 +427,11 @@ model Order {
 }
 
 model OrderItem {
-  id                 Int      @id @default(autoincrement())
+  id                 Int  @id @default(autoincrement())
   order_id           Int
   product_id         Int
   product_variant_id Int?
-  product_name       String   @db.VarChar(255)
-  product_sku        String?  @db.VarChar(120)
-  color_name         String?  @db.VarChar(80)
-  size_label         String?  @db.VarChar(32)
-  image_url          String?  @db.Text
   quantity           Int
-  unit_price         Decimal  @db.Decimal(12, 2)
-  total              Decimal  @db.Decimal(12, 2)
-  created_at         DateTime @default(now())
 
   order        Order               @relation(fields: [order_id], references: [id], onDelete: Cascade)
   product      Product             @relation(fields: [product_id], references: [id], onDelete: Restrict)
@@ -536,7 +451,6 @@ model OrderEvent {
   description   String       @db.Text
   actor_type    String       @db.VarChar(32)
   actor_user_id Int?
-  metadata      Json?
   created_at    DateTime     @default(now())
 
   order      Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
@@ -548,23 +462,21 @@ model OrderEvent {
 }
 
 model PaymentTransaction {
-  id            Int             @id @default(autoincrement())
-  order_id      Int             @unique
+  id            Int           @id @default(autoincrement())
+  order_id      Int           @unique
   method        PaymentMethod
-  status        PaymentStatus   @default(PENDING)
-  provider      PaymentProvider @default(MOCK)
-  amount        Decimal         @db.Decimal(12, 2)
+  status        PaymentStatus @default(PENDENTE)
+  amount        Decimal       @db.Decimal(12, 2)
   installments  Int?
-  pix_code      String?         @db.Text
-  pix_qr_code   String?         @db.Text
-  boleto_url    String?         @db.Text
-  card_brand    String?         @db.VarChar(32)
-  card_last4    String?         @db.VarChar(8)
-  card_holder   String?         @db.VarChar(255)
+  pix_code      String?       @db.Text
+  pix_qr_code   String?       @db.Text
+  boleto_url    String?       @db.Text
+  card_brand    String?       @db.VarChar(32)
+  card_last4    String?       @db.VarChar(8)
+  card_holder   String?       @db.VarChar(255)
   authorized_at DateTime?
-  captured_at   DateTime?
-  created_at    DateTime        @default(now())
-  updated_at    DateTime        @updatedAt
+  created_at    DateTime      @default(now())
+  updated_at    DateTime      @updatedAt
 
   order Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
 
@@ -572,19 +484,15 @@ model PaymentTransaction {
 }
 
 model Shipment {
-  id            Int            @id @default(autoincrement())
-  order_id      Int            @unique
-  carrier       String?        @db.VarChar(120)
-  service_level String?        @db.VarChar(120)
-  tracking_code String?        @db.VarChar(120)
-  tracking_url  String?        @db.Text
-  label_code    String?        @db.VarChar(120)
-  label_url     String?        @db.Text
-  status        ShipmentStatus @default(WAITING)
+  id            Int       @id @default(autoincrement())
+  order_id      Int       @unique
+  carrier       String?   @db.VarChar(120)
+  tracking_code String?   @db.VarChar(120)
+  tracking_url  String?   @db.Text
   shipped_at    DateTime?
   delivered_at  DateTime?
-  created_at    DateTime       @default(now())
-  updated_at    DateTime       @updatedAt
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
 
   order Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
 
@@ -597,14 +505,9 @@ model ReturnRequest {
   customer_id          Int
   requested_by_user_id Int?
   reviewed_by_user_id  Int?
-  order_number         String       @db.VarChar(32)
   reason               String       @db.Text
-  details              String?      @db.Text
-  status               ReturnStatus @default(REQUESTED)
-  label_code           String?      @db.VarChar(120)
-  label_url            String?      @db.Text
+  status               ReturnStatus @default(RECEBIDO)
   requested_at         DateTime     @default(now())
-  expires_at           DateTime
   reviewed_at          DateTime?
   created_at           DateTime     @default(now())
   updated_at           DateTime     @updatedAt
@@ -625,10 +528,6 @@ model ReturnRequestItem {
   return_request_id Int
   order_item_id     Int?
   product_id        Int?
-  product_name      String   @db.VarChar(255)
-  variant_label     String?  @db.VarChar(120)
-  quantity          Int
-  unit_price        Decimal  @db.Decimal(12, 2)
   created_at        DateTime @default(now())
 
   return_request ReturnRequest @relation(fields: [return_request_id], references: [id], onDelete: Cascade)
@@ -644,30 +543,25 @@ model Promotion {
   id         Int                @id @default(autoincrement())
   title      String             @db.VarChar(160)
   subtitle   String             @db.Text
-  badge      String             @db.VarChar(80)
   cta_label  String             @db.VarChar(80)
   cta_href   String             @db.VarChar(255)
   media_url  String             @db.Text
-  media_type PromotionMediaType @default(IMAGE)
-  placement  PromotionPlacement @default(HOME)
-  status     PromotionStatus    @default(DRAFT)
+  media_type PromotionMediaType @default(IMAGEM)
+  status     PromotionStatus    @default(RASCUNHO)
   starts_at  DateTime
   ends_at    DateTime
-  priority   Int                @default(0)
-  audience   String             @db.VarChar(120)
   created_at DateTime           @default(now())
   updated_at DateTime           @updatedAt
 
   @@index([status])
-  @@index([placement])
   @@map("promotions")
 }
 
 model Coupon {
   id                 Int       @id @default(autoincrement())
   code               String    @unique @db.VarChar(32)
+  user_id            Int?
   description        String?   @db.Text
-  discount_type      String    @db.VarChar(16)
   discount_value     Decimal   @db.Decimal(12, 2)
   minimum_purchase   Decimal?  @db.Decimal(12, 2)
   max_uses           Int?
@@ -680,6 +574,8 @@ model Coupon {
   created_at         DateTime  @default(now())
   updated_at         DateTime  @updatedAt
 
+  user User? @relation(fields: [user_id], references: [id])
+
   @@map("coupons")
 }
 
@@ -688,17 +584,12 @@ model SupportConversation {
   customer_id        Int?
   user_id            Int?
   customer_name      String                      @db.VarChar(255)
-  customer_email     String                      @db.VarChar(255)
-  subject            String                      @db.VarChar(255)
-  source             SupportConversationSource   @default(SITE)
-  state              SupportConversationState    @default(AUTOMATED)
+  status             SupportConversationStatus   @default(AUTOMATIZADO)
   priority           SupportConversationPriority @default(NORMAL)
   order_id           Int?
   assigned_user_id   Int?
   human_requested_at DateTime?
   resolved_at        DateTime?
-  tags               String[]
-  last_message_at    DateTime?
   created_at         DateTime                    @default(now())
   updated_at         DateTime                    @updatedAt
 
@@ -710,8 +601,9 @@ model SupportConversation {
 
   @@index([customer_id])
   @@index([user_id])
+  @@index([order_id])
   @@index([assigned_user_id])
-  @@index([state])
+  @@index([status])
   @@map("support_conversations")
 }
 
@@ -719,7 +611,7 @@ model SupportMessage {
   id              Int               @id @default(autoincrement())
   conversation_id Int
   role            ChatMessageRole
-  status          ChatMessageStatus @default(DELIVERED)
+  status          ChatMessageStatus @default(ENTREGUE)
   content         String            @db.Text
   sender_user_id  Int?
   created_at      DateTime          @default(now())
@@ -736,19 +628,15 @@ model SupportMessage {
 model AuditLog {
   id            Int         @id @default(autoincrement())
   actor_user_id Int?
-  actor_name    String      @db.VarChar(255)
   action        AuditAction
-  entity_type   String      @db.VarChar(80)
-  entity_id     String      @db.VarChar(80)
   before        Json?
   after         Json?
-  metadata      Json?
+  url           String
   ip_address    String?     @db.VarChar(64)
   created_at    DateTime    @default(now())
 
   actor_user User? @relation("audit_actor_user", fields: [actor_user_id], references: [id], onDelete: SetNull)
 
   @@index([actor_user_id])
-  @@index([entity_type, entity_id])
   @@map("audit_logs")
 }

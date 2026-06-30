@@ -1,8 +1,4 @@
-export const welcomeUserTemplate = (
-  name: string,
-  verificationLink: string,
-  year: number,
-) => `
+export const welcomeUserTemplate = (name: string, year: number) => `
   <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -43,31 +39,7 @@ export const welcomeUserTemplate = (
               </p>
 
               <p style="font-size:16px; line-height:24px; color:#4b5563;">
-                Para começar a usar sua conta, confirme seu e-mail clicando no botão abaixo:
-              </p>
-
-              <!-- Botão -->
-              <table cellpadding="0" cellspacing="0" style="margin:30px 0;">
-                <tr>
-                  <td align="center" style="background-color:#2563eb; border-radius:8px;">
-                    <a href="{{verificationLink}}"
-                       target="_blank"
-                       style="display:inline-block; padding:14px 28px; font-size:16px; color:#ffffff; text-decoration:none; font-weight:bold;">
-                      Verificar conta
-                    </a>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Link fallback -->
-              <p style="font-size:14px; color:#6b7280;">
-                Se o botão não funcionar, copie e cole este link no navegador:
-              </p>
-
-              <p style="font-size:14px; word-break:break-all;">
-                <a href="${verificationLink}" style="color:#2563eb;">
-                  ${verificationLink}
-                </a>
+                Sua conta foi criada com sucesso e já está pronta para uso.
               </p>
 
               <hr style="border:none; border-top:1px solid #e5e7eb; margin:30px 0;" />
