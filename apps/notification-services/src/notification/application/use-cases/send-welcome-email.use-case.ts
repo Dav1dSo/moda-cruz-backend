@@ -9,7 +9,7 @@ export class SendWelcomeEmailUseCase {
 
   async execute(event: UserCreatedEvent): Promise<void> {
     await this.emailService.sendEmail(
-      event.to,
+      event.email,
       'Bem-vindo à nossa plataforma',
       welcomeUserTemplate(event.name, new Date().getFullYear()),
     );

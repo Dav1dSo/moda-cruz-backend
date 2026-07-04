@@ -1,10 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
-  IsDateString,
+  IsArray,
+  IsBoolean,
   IsEmail,
   IsInt,
+  IsOptional,
   IsString,
   Matches,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
 
 export class CreateUserRequestDTO {
@@ -24,40 +29,30 @@ export class CreateUserRequestDTO {
   @ApiProperty({
     minLength: 8,
     maxLength: 20,
-    pattern: '^[^@]+@[^@]+\\.[^@]+$',
     description:
       'Senha com 8-20 caracteres, incluindo letras maiúsculas, números e símbolos',
   })
+  @IsString()
+  @MinLength(8)
+  @MaxLength(20)
   @Matches(/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()-+]).*$/, {
     message:
       'A senha deve conter ao menos uma letra maiúscula e um número e um símbolo',
   })
-  @IsString()
   password!: string;
 
-  @ApiProperty({ description: 'Rua' })
-  @IsString()
-  street!: string;
-
-  @ApiProperty({ description: 'Cidade' })
-  @IsString()
-  city!: string;
-
-  @ApiProperty({ description: 'Estado' })
-  @IsString()
-  state!: string;
-
-  @ApiProperty({ description: 'CEP' })
-  @IsString()
-  zipCode!: string;
-
-  @ApiProperty({ description: 'País' })
-  @IsString()
-  country!: string;
-
-  @ApiProperty({ description: 'Número' })
-  @IsString()
-  number!: string;
+  @ApiProperty({
+    description: 'Ids de perfis vinculados ao usuário',
+    type: Number,
+    isArray: true,
+    required: false,
+    default: [],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  @Type(() => Number)
+  profile_ids: number[] = [];
 }
 
 export class UpdateUserRequestDTO {
@@ -74,27 +69,20 @@ export class UpdateUserRequestDTO {
   @IsString()
   phone!: string;
 
-  @ApiProperty({ description: 'Rua' })
-  @IsString()
-  street!: string;
+  @ApiProperty({ description: 'Status do usuário', required: false })
+  @IsOptional()
+  @IsBoolean()
+  is_active?: boolean;
 
-  @ApiProperty({ description: 'Cidade' })
-  @IsString()
-  city!: string;
-
-  @ApiProperty({ description: 'Estado' })
-  @IsString()
-  state!: string;
-
-  @ApiProperty({ description: 'CEP' })
-  @IsString()
-  zipCode!: string;
-
-  @ApiProperty({ description: 'País' })
-  @IsString()
-  country!: string;
-
-  @ApiProperty({ description: 'Número' })
-  @IsString()
-  number!: string;
+  @ApiProperty({
+    description: 'Ids de perfis vinculados ao usuário',
+    type: Number,
+    isArray: true,
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  @Type(() => Number)
+  profile_ids?: number[];
 }

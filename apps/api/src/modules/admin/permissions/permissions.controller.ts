@@ -9,12 +9,12 @@ import {
   Put,
   ParseIntPipe,
 } from '@nestjs/common';
-import { CreatePermissionService } from './create-permission.service';
+import { CreatePermissionUseCase } from './application/use-cases/create-permission.use-case';
 import { CreatePermissionRequestDTO } from './dto/request/permisions-request-dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { UpdatePermissionService } from './update-permission.service';
-import { DeletePermissionService } from './delete-permission.service';
-import { GetAllPermissionsService } from './getall-permissions.service';
+import { UpdatePermissionUseCase } from './application/use-cases/update-permission.use-case';
+import { DeletePermissionUseCase } from './application/use-cases/delete-permission.use-case';
+import { GetAllPermissionsUseCase } from './application/use-cases/getall-permissions.use-case';
 import { Permissions } from '../../auth/decorators/permissions-decorator';
 import { AuthLoginRequired } from '../../auth/guards/auth.guard';
 import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
@@ -22,10 +22,10 @@ import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
 @Controller('permissions')
 export class PermissionsController {
   constructor(
-    private readonly createPermissionService: CreatePermissionService,
-    private readonly updatePermissionService: UpdatePermissionService,
-    private readonly deletePermissionService: DeletePermissionService,
-    private readonly getAllPermissionsService: GetAllPermissionsService,
+    private readonly createPermissionUseCase: CreatePermissionUseCase,
+    private readonly updatePermissionUseCase: UpdatePermissionUseCase,
+    private readonly deletePermissionUseCase: DeletePermissionUseCase,
+    private readonly getAllPermissionsUseCase: GetAllPermissionsUseCase,
   ) {}
 
   @ApiBearerAuth()
@@ -35,7 +35,7 @@ export class PermissionsController {
   async execute(
     @Body() req: CreatePermissionRequestDTO,
   ): Promise<ResponseDefaultDTO> {
-    return await this.createPermissionService.execute(req);
+    return await this.createPermissionUseCase.execute(req);
   }
 
   @ApiBearerAuth()
@@ -46,7 +46,7 @@ export class PermissionsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() req: CreatePermissionRequestDTO,
   ) {
-    return await this.updatePermissionService.execute(id, req);
+    return await this.updatePermissionUseCase.execute(id, req);
   }
 
   @ApiBearerAuth()
@@ -54,7 +54,7 @@ export class PermissionsController {
   @Permissions('permission.delete')
   @Delete(':id')
   async delete(@Param('id', ParseIntPipe) id: number) {
-    return await this.deletePermissionService.execute(id);
+    return await this.deletePermissionUseCase.execute(id);
   }
 
   @ApiBearerAuth()
@@ -62,6 +62,6 @@ export class PermissionsController {
   @Permissions('permission.read')
   @Get()
   async getAll() {
-    return await this.getAllPermissionsService.execute();
+    return await this.getAllPermissionsUseCase.execute();
   }
 }

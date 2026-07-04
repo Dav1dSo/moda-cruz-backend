@@ -1,19 +1,21 @@
 import { Module } from '@nestjs/common';
 import { PermissionsController } from './permissions.controller';
-import { CreatePermissionService } from './create-permission.service';
-import { UpdatePermissionService } from './update-permission.service';
-import { DeletePermissionService } from './delete-permission.service';
-import { GetAllPermissionsService } from './getall-permissions.service';
+import { CreatePermissionUseCase } from './application/use-cases/create-permission.use-case';
+import { UpdatePermissionUseCase } from './application/use-cases/update-permission.use-case';
+import { DeletePermissionUseCase } from './application/use-cases/delete-permission.use-case';
+import { GetAllPermissionsUseCase } from './application/use-cases/getall-permissions.use-case';
 import { AuthModule } from '../../auth/auth.module';
+import { PermissionRepository } from './domain/repositories/permission.repository';
 
 @Module({
   imports: [AuthModule],
   controllers: [PermissionsController],
   providers: [
-    CreatePermissionService,
-    UpdatePermissionService,
-    DeletePermissionService,
-    GetAllPermissionsService,
+    CreatePermissionUseCase,
+    UpdatePermissionUseCase,
+    DeletePermissionUseCase,
+    GetAllPermissionsUseCase,
+    PermissionRepository,
   ],
 })
 export class PermissionsModule {}

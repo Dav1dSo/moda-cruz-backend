@@ -1,9 +1,9 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@app/database';
 import { ResetPasswordRequestDTO } from '../../dtos/request/auth-service-dto';
 import { JwtService } from '@nestjs/jwt';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
+import { AuthRepository } from '../../domain/repository';
 import {
   NOTIFICATIONS_CLIENT,
   RESET_PASSWORD_REQUESTED_EVENT,
@@ -12,7 +12,7 @@ import {
 @Injectable()
 export class ResetPasswordService {
   constructor(
-    private readonly prismaService: PrismaService,
+    private readonly userRepository: AuthRepository,
     private readonly jwtService: JwtService,
     @Inject(NOTIFICATIONS_CLIENT)
     private readonly brokerClient: ClientProxy,
@@ -20,11 +20,7 @@ export class ResetPasswordService {
 
   async execute(req: ResetPasswordRequestDTO) {
     try {
-      const user = await this.prismaService.user.findFirst({
-        where: {
-          email: req.email,
-        },
-      });
+      const user = await this.userRepository.getUserByEmail(req.email);
 
       if (!user) {
         throw new NotFoundException('Email inválido!');
@@ -36,7 +32,8 @@ export class ResetPasswordService {
           type: 'reset-password',
         },
         {
-          expiresIn: '1DAY',
+          secret: process.env.JWT_RESET_PASSWORD_SECRET || process.env.JWT_SECRET,
+          expiresIn: '1d',
         },
       );
 

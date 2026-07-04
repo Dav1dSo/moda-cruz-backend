@@ -47,6 +47,8 @@ export class AuthLoginRequired implements CanActivate {
 
     if (!requiredPermissions) return true;
 
+    if (payload.is_platform_admin) return true;
+
     const hasPermission = requiredPermissions.every((perm) =>
       payload.permissions?.includes(perm),
     );

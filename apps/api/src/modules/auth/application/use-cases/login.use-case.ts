@@ -52,6 +52,7 @@ export class AuthLoginService {
           sub: user.id,
           email: user.email,
           permissions,
+          is_platform_admin: user.is_platform_admin,
         },
         {
           secret: process.env.JWT_SECRET,
@@ -64,12 +65,15 @@ export class AuthLoginService {
           sub: user.id,
           email: user.email,
           permissions,
+          is_platform_admin: user.is_platform_admin,
         },
         {
           secret: process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
           expiresIn: '7d',
         },
       );
+
+      await this.userRepository.updateLastLogin(user.id);
 
       return {
         accessToken,

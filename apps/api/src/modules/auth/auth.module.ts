@@ -7,6 +7,8 @@ import { AuthController } from './auth.controller';
 import { AuthRefreshTokenService } from './application/use-cases/refresh-token.use-case';
 import { ResetPasswordService } from './application/use-cases/reset-password.use-case';
 import { ConfirmResetPasswordUseCase } from './application/use-cases/confirm-reset-password.use-case';
+import { RegisterCustomerUseCase } from './application/use-cases/register-customer.use-case';
+import { GetMeUseCase } from './application/use-cases/get-me.use-case';
 import { AuthLoginRequired } from './guards/auth.guard';
 import { AuthRepository } from './domain/repository';
 import {
@@ -50,6 +52,8 @@ import {
     AuthRefreshTokenService,
     ResetPasswordService,
     ConfirmResetPasswordUseCase,
+    RegisterCustomerUseCase,
+    GetMeUseCase,
     AuthLoginRequired,
     AuthRepository,
   ],

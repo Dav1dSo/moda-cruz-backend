@@ -6,6 +6,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -14,16 +15,16 @@ import {
   UpdateUserRequestDTO,
 } from './dtos/request/user-request';
 import { ResponseDefaultDTO } from '../../../shared/shared.dtos';
-import { UserServiceGetAll } from './getall-users.service';
-import { FindUserService } from './find-user.service';
+import { GetAllUsersUseCase } from './application/use-cases/getall-users.use-case';
+import { FindUserUseCase } from './application/use-cases/find-user.use-case';
 import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
-import { UserServiceDelete } from './delete-user.service';
+import { DeleteUserUseCase } from './application/use-cases/delete-user.use-case';
 import {
   GetAllUsersFiltersDTO,
   GetAllUsersResponseDTO,
   GetUserResponseDTO,
 } from './dtos/response/user-response';
-import { UserServiceUpdate } from './update-user.service';
+import { UpdateUserUseCase } from './application/use-cases/update-user.use-case';
 import { AuthLoginRequired } from '../../auth/guards/auth.guard';
 import { Permissions } from '../../auth/decorators/permissions-decorator';
 import { CreateUserUseCase } from './application/use-cases/create-users.use-case';
@@ -32,10 +33,10 @@ import { CreateUserUseCase } from './application/use-cases/create-users.use-case
 export class UsersController {
   constructor(
     private readonly createUserUseCase: CreateUserUseCase,
-    private readonly userServiceGetAll: UserServiceGetAll,
-    private readonly userServiceFind: FindUserService,
-    private readonly userServiceDelete: UserServiceDelete,
-    private readonly userServiceUpdate: UserServiceUpdate,
+    private readonly getAllUsersUseCase: GetAllUsersUseCase,
+    private readonly findUserUseCase: FindUserUseCase,
+    private readonly deleteUserUseCase: DeleteUserUseCase,
+    private readonly updateUserUseCase: UpdateUserUseCase,
   ) {}
 
   @ApiBearerAuth()
@@ -45,12 +46,12 @@ export class UsersController {
   async findAll(
     @Query() filters: GetAllUsersFiltersDTO,
   ): Promise<GetAllUsersResponseDTO[]> {
-    return await this.userServiceGetAll.execute(filters);
+    return await this.getAllUsersUseCase.execute(filters);
   }
 
-  // @ApiBearerAuth()
-  // @UseGuards(AuthLoginRequired)
-  // @Permissions('user.create')
+  @ApiBearerAuth()
+  @UseGuards(AuthLoginRequired)
+  @Permissions('user.create')
   @Post()
   async create(
     @Body() userData: CreateUserRequestDTO,
@@ -74,18 +75,24 @@ export class UsersController {
   async findOne(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<GetUserResponseDTO | null> {
-    return await this.userServiceFind.execute(id);
+    return await this.findUserUseCase.execute(id);
   }
 
   @ApiBearerAuth()
   @UseGuards(AuthLoginRequired)
   @Permissions('user.update')
-  @Post('/update')
-  async aupdateUser(
-    @Param(':id', ParseIntPipe) user_id: number,
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'ID do usuário',
+    example: 1,
+  })
+  @Put(':id')
+  async updateUser(
+    @Param('id', ParseIntPipe) user_id: number,
     @Body() req: UpdateUserRequestDTO,
   ): Promise<ResponseDefaultDTO> {
-    return await this.userServiceUpdate.execute(req, user_id);
+    return await this.updateUserUseCase.execute(req, user_id);
   }
 
   @ApiBearerAuth()
@@ -101,6 +108,6 @@ export class UsersController {
   async remove(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<ResponseDefaultDTO> {
-    return await this.userServiceDelete.execute(id);
+    return await this.deleteUserUseCase.execute(id);
   }
 }

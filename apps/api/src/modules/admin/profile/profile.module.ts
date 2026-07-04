@@ -1,19 +1,21 @@
 import { Module } from '@nestjs/common';
 import { ProfileController } from './profile.controller';
-import { CreateProfileService } from './create-profile.service';
-import { GetAllProfilesService } from './get-all-profiles.service';
+import { CreateProfileUseCase } from './application/use-cases/create-profile.use-case';
+import { GetAllProfilesUseCase } from './application/use-cases/get-all-profiles.use-case';
 import { AuthModule } from '../../auth/auth.module';
-import { DeleteProfileService } from './delete-profile.service';
-import { UpdateProfileService } from './update-profile.service';
+import { DeleteProfileUseCase } from './application/use-cases/delete-profile.use-case';
+import { UpdateProfileUseCase } from './application/use-cases/update-profile.use-case';
+import { ProfileRepository } from './domain/repositories/profile.repository';
 
 @Module({
   imports: [AuthModule],
   controllers: [ProfileController],
   providers: [
-    CreateProfileService,
-    GetAllProfilesService,
-    DeleteProfileService,
-    UpdateProfileService,
+    CreateProfileUseCase,
+    GetAllProfilesUseCase,
+    DeleteProfileUseCase,
+    UpdateProfileUseCase,
+    ProfileRepository,
   ],
 })
 export class ProfileModule {}

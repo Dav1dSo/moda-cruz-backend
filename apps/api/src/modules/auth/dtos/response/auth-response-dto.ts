@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
-  IsJWT,
   IsNumber,
   IsString,
   ValidateNested,
@@ -76,18 +75,42 @@ export class RequiredLoginResponseDTO {
   profiles!: ProfileResponseDTO[];
 }
 
-export class AuthLoginResponseDTO {
-  @IsJWT()
-  @ApiProperty({ description: 'Access token' })
+export class LoginResponseDTO {
+  @ApiProperty({
+    description: 'Access token',
+  })
+  @IsString()
   accessToken!: string;
 
-  @IsJWT()
-  @ApiProperty({ description: 'Refresh token' })
-  refreshToken!: string;
+  @ApiProperty({ type: UserResponseDTO })
+  @ValidateNested()
+  @Type(() => UserResponseDTO)
+  user!: UserResponseDTO;
+
+  @ApiProperty({
+    type: [ProfileResponseDTO],
+  })
+  @ValidateNested({ each: true })
+  @Type(() => ProfileResponseDTO)
+  profiles!: ProfileResponseDTO[];
 }
 
 export class RefreshTokenResponseDTO {
   @ApiProperty({ description: 'Access token' })
   @IsString()
   accessToken!: string;
+}
+
+export class MeResponseDTO {
+  @ApiProperty({ type: UserResponseDTO })
+  @ValidateNested()
+  @Type(() => UserResponseDTO)
+  user!: UserResponseDTO;
+
+  @ApiProperty({
+    type: [ProfileResponseDTO],
+  })
+  @ValidateNested({ each: true })
+  @Type(() => ProfileResponseDTO)
+  profiles!: ProfileResponseDTO[];
 }

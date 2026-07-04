@@ -14,23 +14,23 @@ import {
   GetAllProfilesRequestDTO,
   UpdateProfileRequestDTO,
 } from './dto/request/profile-request-dto';
-import { CreateProfileService } from './create-profile.service';
+import { CreateProfileUseCase } from './application/use-cases/create-profile.use-case';
 import { GetAllProfilesResponseDTO } from './dto/response/profile-respone-dto';
-import { GetAllProfilesService } from './get-all-profiles.service';
+import { GetAllProfilesUseCase } from './application/use-cases/get-all-profiles.use-case';
 import { AuthLoginRequired } from '../../auth/guards/auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { Permissions } from '../../auth/decorators/permissions-decorator';
-import { DeleteProfileService } from './delete-profile.service';
+import { DeleteProfileUseCase } from './application/use-cases/delete-profile.use-case';
 import { ResponseDefaultDTO } from '../../../shared/shared.dtos';
-import { UpdateProfileService } from './update-profile.service';
+import { UpdateProfileUseCase } from './application/use-cases/update-profile.use-case';
 
 @Controller('profile')
 export class ProfileController {
   constructor(
-    private readonly profileCreateService: CreateProfileService,
-    private readonly profileGetAllService: GetAllProfilesService,
-    private readonly profileDeleteService: DeleteProfileService,
-    private readonly updateProfileService: UpdateProfileService,
+    private readonly createProfileUseCase: CreateProfileUseCase,
+    private readonly getAllProfilesUseCase: GetAllProfilesUseCase,
+    private readonly deleteProfileUseCase: DeleteProfileUseCase,
+    private readonly updateProfileUseCase: UpdateProfileUseCase,
   ) {}
 
   @ApiBearerAuth()
@@ -38,7 +38,7 @@ export class ProfileController {
   @Permissions('profile.create')
   @Post()
   async create(@Body() req: CreateProfileRequestDTO) {
-    return await this.profileCreateService.execute(req);
+    return await this.createProfileUseCase.execute(req);
   }
 
   @ApiBearerAuth()
@@ -48,7 +48,7 @@ export class ProfileController {
   async findAll(
     @Query() filters: GetAllProfilesRequestDTO,
   ): Promise<GetAllProfilesResponseDTO[]> {
-    return await this.profileGetAllService.execute(filters);
+    return await this.getAllProfilesUseCase.execute(filters);
   }
 
   @ApiBearerAuth()
@@ -58,7 +58,7 @@ export class ProfileController {
   async delete(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<ResponseDefaultDTO> {
-    return await this.profileDeleteService.execute(id);
+    return await this.deleteProfileUseCase.execute(id);
   }
 
   @ApiBearerAuth()
@@ -69,6 +69,6 @@ export class ProfileController {
     @Param('id', ParseIntPipe) id: number,
     @Body() req: UpdateProfileRequestDTO,
   ): Promise<ResponseDefaultDTO> {
-    return await this.updateProfileService.execute(id, req);
+    return await this.updateProfileUseCase.execute(id, req);
   }
 }
