@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from '../../domain/repositories/users.repository';
-import {
-  GetAllUsersFiltersDTO,
-  GetAllUsersResponseDTO,
-} from '../../dtos/response/user-response';
+import { UserRepository } from '../../infrastructure/repositories/user.repository';
+import { GetAllUsersFiltersDTO } from '../../dtos/request/user-request';
+import { GetAllUsersResponseDTO } from '../../dtos/response/user-response';
 
 @Injectable()
 export class GetAllUsersUseCase {

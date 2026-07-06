@@ -12,9 +12,6 @@ export class DocumentValidator {
       return true;
     }
 
-    return type === 'CPF'
-      ? cpf.isValid(document)
-      : cnpj.isValid(document);
-      
+    return type === 'CPF' ? cpf.isValid(document) : cnpj.isValid(document);
   }
 }

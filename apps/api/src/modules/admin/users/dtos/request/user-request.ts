@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
+  IsDateString,
   IsEmail,
   IsInt,
   IsOptional,
@@ -11,6 +12,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { PaginationRequestDTO } from 'apps/api/src/shared/shared.dtos';
 
 export class CreateUserRequestDTO {
   @ApiProperty({ description: 'Nome completo' })
@@ -85,4 +87,26 @@ export class UpdateUserRequestDTO {
   @IsInt({ each: true })
   @Type(() => Number)
   profile_ids?: number[];
+}
+
+export class GetAllUsersFiltersDTO extends PaginationRequestDTO {
+  @ApiProperty({ required: false, description: 'Filtrar por nome' })
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  @ApiProperty({ required: false, description: 'Filtrar por email' })
+  @IsString()
+  @IsOptional()
+  email?: string;
+
+  @ApiProperty({ required: false, description: 'Filtro data criação inicial' })
+  @IsDateString()
+  @IsOptional()
+  created_at_start?: string;
+
+  @ApiProperty({ required: false, description: 'Filtro data criação final' })
+  @IsDateString()
+  @IsOptional()
+  created_at_end?: string;
 }

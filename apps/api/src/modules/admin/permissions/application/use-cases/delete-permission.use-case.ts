@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
-import { PermissionRepository } from '../../domain/repositories/permission.repository';
+import { PermissionRepository } from '../../infrastructure/repositories/permission.repository';
 
 @Injectable()
 export class DeletePermissionUseCase {

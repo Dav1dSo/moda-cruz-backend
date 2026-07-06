@@ -5,8 +5,8 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ResponseDefaultDTO } from '../../../../shared/shared.dtos';
-import { ConfirmResetPasswordRequestDTO } from '../../dtos/request/auth-service-dto';
-import { AuthRepository } from '../../domain/repository';
+import { ConfirmResetPasswordRequestDTO } from '../../dtos/request/auth-request';
+import { AuthRepository } from '../../infrastructure/repositories/auth.repository';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -19,35 +19,37 @@ export class ConfirmResetPasswordUseCase {
   async execute(
     req: ConfirmResetPasswordRequestDTO,
   ): Promise<ResponseDefaultDTO> {
+    let payload: { sub: number; type: string };
+
     try {
-      const payload = this.jwtService.verify(req.token, {
+      payload = this.jwtService.verify(req.token, {
         secret: process.env.JWT_RESET_PASSWORD_SECRET || process.env.JWT_SECRET,
       });
-
-      if (payload.type !== 'reset-password') {
-        throw new UnauthorizedException('Token inválido');
-      }
-
-      const user = await this.userRepository.findByIdAndEmail(
-        payload.sub,
-        req.email,
-      );
-
-      if (!user) {
-        throw new BadRequestException('Não foi possível executar ação.');
-      }
-
-      const hashedPassword = await bcrypt.hash(req.new_password, 12);
-
-      await this.userRepository.updatePassword(user.id, hashedPassword);
-
-      return {
-        message: 'Senha atualizada com sucesso',
-      };
-    } catch (error) {
+    } catch {
       throw new UnauthorizedException(
         'Solicite um novo email e tente novamente.',
       );
     }
+
+    if (payload.type !== 'reset-password') {
+      throw new UnauthorizedException('Token inválido');
+    }
+
+    const user = await this.userRepository.findByIdAndEmail(
+      payload.sub,
+      req.email,
+    );
+
+    if (!user) {
+      throw new BadRequestException('Não foi possível executar ação.');
+    }
+
+    const hashedPassword = await bcrypt.hash(req.new_password, 12);
+
+    await this.userRepository.updatePassword(user.id, hashedPassword);
+
+    return {
+      message: 'Senha atualizada com sucesso',
+    };
   }
 }

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
+import { PaginationRequestDTO } from 'apps/api/src/shared/shared.dtos';
 
 export class CreateProfileRequestDTO {
   @ApiProperty({
@@ -35,9 +36,10 @@ export class CreateProfileRequestDTO {
   permission_ids!: number[];
 }
 
-export class GetAllProfilesRequestDTO {
+export class GetAllProfilesRequestDTO extends PaginationRequestDTO {
   @ApiProperty({
     description: 'Nome do perfil',
+    required: false,
   })
   @IsOptional()
   @IsString()
@@ -45,10 +47,14 @@ export class GetAllProfilesRequestDTO {
 
   @ApiProperty({
     description: 'Status do perfil',
+    required: false,
   })
-  @IsOptional()
+  @Transform(({ value }) =>
+    value === 'true' ? true : value === 'false' ? false : (value as unknown),
+  )
   @IsBoolean()
-  is_active?: string;
+  @IsOptional()
+  is_active?: boolean;
 }
 
 export class UpdateProfileRequestDTO {

@@ -3,9 +3,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreatePermissionRequestDTO } from '../../dto/request/permisions-request-dto';
+import { UpdatePermissionRequestDTO } from '../../dtos/request/permission-request';
 import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
-import { PermissionRepository } from '../../domain/repositories/permission.repository';
+import { PermissionRepository } from '../../infrastructure/repositories/permission.repository';
 
 @Injectable()
 export class UpdatePermissionUseCase {
@@ -13,7 +13,7 @@ export class UpdatePermissionUseCase {
 
   async execute(
     id: number,
-    req: CreatePermissionRequestDTO,
+    req: UpdatePermissionRequestDTO,
   ): Promise<ResponseDefaultDTO> {
     const permission = await this.permissionRepository.findById(id);
 
@@ -21,13 +21,20 @@ export class UpdatePermissionUseCase {
       throw new NotFoundException('Permissão não encontrada');
     }
 
-    const permissionExists = await this.permissionRepository.findByNameExcludingId(
-      id,
-      req.name,
-    );
+    const permissionExists =
+      await this.permissionRepository.findByNameExcludingId(id, req.name);
 
     if (permissionExists) {
       throw new ConflictException('Permissão já cadastrada');
+    }
+
+    const keyExists = await this.permissionRepository.findByKeyExcludingId(
+      id,
+      req.key,
+    );
+
+    if (keyExists) {
+      throw new ConflictException('Chave de permissão já cadastrada');
     }
 
     await this.permissionRepository.update(id, req);

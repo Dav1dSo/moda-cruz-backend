@@ -2,15 +2,15 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { AuthLoginService } from './application/use-cases/login.use-case';
+import { LoginUseCase } from './application/use-cases/login.use-case';
 import { AuthController } from './auth.controller';
-import { AuthRefreshTokenService } from './application/use-cases/refresh-token.use-case';
-import { ResetPasswordService } from './application/use-cases/reset-password.use-case';
+import { RefreshTokenUseCase } from './application/use-cases/refresh-token.use-case';
+import { ResetPasswordUseCase } from './application/use-cases/reset-password.use-case';
 import { ConfirmResetPasswordUseCase } from './application/use-cases/confirm-reset-password.use-case';
 import { RegisterCustomerUseCase } from './application/use-cases/register-customer.use-case';
 import { GetMeUseCase } from './application/use-cases/get-me.use-case';
 import { AuthLoginRequired } from './guards/auth.guard';
-import { AuthRepository } from './domain/repository';
+import { AuthRepository } from './infrastructure/repositories/auth.repository';
 import {
   NOTIFICATIONS_CLIENT,
   NOTIFICATIONS_QUEUE,
@@ -39,18 +39,30 @@ import {
         }),
       },
     ]),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'secret',
-      signOptions: {
-        expiresIn: '15m',
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const secret = configService.get<string>('JWT_SECRET');
+
+        if (!secret) {
+          throw new Error('JWT_SECRET não configurado');
+        }
+
+        return {
+          secret,
+          signOptions: {
+            expiresIn: '15m',
+          },
+        };
       },
     }),
   ],
   controllers: [AuthController],
   providers: [
-    AuthLoginService,
-    AuthRefreshTokenService,
-    ResetPasswordService,
+    LoginUseCase,
+    RefreshTokenUseCase,
+    ResetPasswordUseCase,
     ConfirmResetPasswordUseCase,
     RegisterCustomerUseCase,
     GetMeUseCase,

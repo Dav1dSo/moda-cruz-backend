@@ -1,11 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  IsBoolean,
-  IsNumber,
-  IsString,
-  ValidateNested,
-} from 'class-validator';
+import { IsBoolean, IsNumber, IsString, ValidateNested } from 'class-validator';
 
 export class UserResponseDTO {
   @ApiProperty({

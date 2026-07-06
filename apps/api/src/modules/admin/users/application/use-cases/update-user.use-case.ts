@@ -1,11 +1,11 @@
 import {
-  BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { UpdateUserRequestDTO } from '../../dtos/request/user-request';
 import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
-import { UserRepository } from '../../domain/repositories/users.repository';
+import { UserRepository } from '../../infrastructure/repositories/user.repository';
 
 @Injectable()
 export class UpdateUserUseCase {
@@ -27,17 +27,11 @@ export class UpdateUserUseCase {
     );
 
     if (userExists) {
-      throw new BadRequestException(
-        'Email, CPF ou phone já estão cadastrados.',
-      );
+      throw new ConflictException('Email ou telefone já cadastrados.');
     }
 
-    await this.userRepository.updateUser(user_id, req);
+    await this.userRepository.updateUserWithProfiles(user_id, req);
 
-    if (req.profile_ids !== undefined) {
-      await this.userRepository.syncUserProfiles(user_id, req.profile_ids);
-    }
-
-    return { message: 'Update successful.' };
+    return { message: 'Usuário atualizado com sucesso' };
   }
 }

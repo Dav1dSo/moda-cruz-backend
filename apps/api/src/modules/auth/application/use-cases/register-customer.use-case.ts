@@ -1,7 +1,7 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { RegisterRequestDTO } from '../../dtos/request/auth-service-dto';
-import { AuthRepository } from '../../domain/repository';
+import { RegisterRequestDTO } from '../../dtos/request/auth-request';
+import { AuthRepository } from '../../infrastructure/repositories/auth.repository';
 import { ResponseDefaultDTO } from '../../../../shared/shared.dtos';
 import { NOTIFICATIONS_CLIENT } from '@contracts/auth/reset-password-requested.event';
 import { USER_CREATED_EVENT } from '@contracts/users/user-created.event';
@@ -16,7 +16,7 @@ export class RegisterCustomerUseCase {
   ) {}
 
   async execute(req: RegisterRequestDTO): Promise<ResponseDefaultDTO> {
-    const user = await this.userRepository.getUserByEmail(req.email);
+    const user = await this.userRepository.findBasicByEmail(req.email);
 
     if (user) {
       throw new ConflictException('Email já cadastrado.');

@@ -1,16 +1,16 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { ResetPasswordRequestDTO } from '../../dtos/request/auth-service-dto';
+import { Inject, Injectable } from '@nestjs/common';
+import { ResetPasswordRequestDTO } from '../../dtos/request/auth-request';
 import { JwtService } from '@nestjs/jwt';
 import { ClientProxy } from '@nestjs/microservices';
-import { lastValueFrom } from 'rxjs';
-import { AuthRepository } from '../../domain/repository';
+import { ResponseDefaultDTO } from '../../../../shared/shared.dtos';
+import { AuthRepository } from '../../infrastructure/repositories/auth.repository';
 import {
   NOTIFICATIONS_CLIENT,
   RESET_PASSWORD_REQUESTED_EVENT,
 } from '@contracts/auth/reset-password-requested.event';
 
 @Injectable()
-export class ResetPasswordService {
+export class ResetPasswordUseCase {
   constructor(
     private readonly userRepository: AuthRepository,
     private readonly jwtService: JwtService,
@@ -18,40 +18,36 @@ export class ResetPasswordService {
     private readonly brokerClient: ClientProxy,
   ) {}
 
-  async execute(req: ResetPasswordRequestDTO) {
-    try {
-      const user = await this.userRepository.getUserByEmail(req.email);
+  async execute(req: ResetPasswordRequestDTO): Promise<ResponseDefaultDTO> {
+    const user = await this.userRepository.findBasicByEmail(req.email);
 
-      if (!user) {
-        throw new NotFoundException('Email inválido!');
-      }
-
-      const tokenResetPassword = this.jwtService.sign(
-        {
-          sub: user.id,
-          type: 'reset-password',
-        },
-        {
-          secret: process.env.JWT_RESET_PASSWORD_SECRET || process.env.JWT_SECRET,
-          expiresIn: '1d',
-        },
-      );
-
-      const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${tokenResetPassword}`;
-
-      await lastValueFrom(
-        this.brokerClient.emit(RESET_PASSWORD_REQUESTED_EVENT, {
-          to: user.email,
-          name: user.name,
-          resetLink,
-        }),
-      );
-
+    if (!user) {
       return {
         message: 'Acesse seu email para recuperar senha',
       };
-    } catch (error) {
-      throw error;
     }
+
+    const tokenResetPassword = this.jwtService.sign(
+      {
+        sub: user.id,
+        type: 'reset-password',
+      },
+      {
+        secret: process.env.JWT_RESET_PASSWORD_SECRET || process.env.JWT_SECRET,
+        expiresIn: '1d',
+      },
+    );
+
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${tokenResetPassword}`;
+
+    this.brokerClient.emit(RESET_PASSWORD_REQUESTED_EVENT, {
+      to: user.email,
+      name: user.name,
+      resetLink,
+    });
+
+    return {
+      message: 'Acesse seu email para recuperar senha',
+    };
   }
 }

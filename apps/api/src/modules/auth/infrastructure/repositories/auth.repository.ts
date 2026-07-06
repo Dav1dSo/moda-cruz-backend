@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@app/database';
 import * as bcrypt from 'bcrypt';
-import { RegisterRequestDTO } from '../dtos/request/auth-service-dto';
+import { RegisterRequestDTO } from '../../dtos/request/auth-request';
 
 @Injectable()
 export class AuthRepository {
@@ -41,6 +41,46 @@ export class AuthRepository {
     });
   }
 
+  async findUserWithPermissionsByEmail(email: string) {
+    return await this.db.user.findFirst({
+      where: { email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        is_platform_admin: true,
+        deleted_at: true,
+        is_active: true,
+        profiles: {
+          select: {
+            profile: {
+              select: {
+                id: true,
+                name: true,
+                permissions: {
+                  select: {
+                    permission: {
+                      select: {
+                        key: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async findBasicByEmail(email: string) {
+    return await this.db.user.findFirst({
+      where: { email },
+      select: { id: true, name: true, email: true },
+    });
+  }
+
   async updateLastLogin(userId: number) {
     await this.db.user.update({
       where: { id: userId },
@@ -51,6 +91,7 @@ export class AuthRepository {
   async findByIdAndEmail(id: number, email: string) {
     return await this.db.user.findFirst({
       where: { id, email },
+      select: { id: true, email: true },
     });
   }
 

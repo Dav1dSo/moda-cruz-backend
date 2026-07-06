@@ -2,13 +2,13 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { UsersController } from './users.controller';
-import { GetAllUsersUseCase } from './application/use-cases/getall-users.use-case';
+import { GetAllUsersUseCase } from './application/use-cases/get-all-users.use-case';
 import { FindUserUseCase } from './application/use-cases/find-user.use-case';
 import { DeleteUserUseCase } from './application/use-cases/delete-user.use-case';
 import { UpdateUserUseCase } from './application/use-cases/update-user.use-case';
 import { AuthModule } from '../../auth/auth.module';
-import { CreateUserUseCase } from './application/use-cases/create-users.use-case';
-import { UserRepository } from './domain/repositories/users.repository';
+import { CreateUserUseCase } from './application/use-cases/create-user.use-case';
+import { UserRepository } from './infrastructure/repositories/user.repository';
 import {
   NOTIFICATIONS_CLIENT,
   NOTIFICATIONS_QUEUE,

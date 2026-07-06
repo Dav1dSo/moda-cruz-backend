@@ -1,6 +1,9 @@
 import { PrismaService } from '@app/database';
 import { Injectable } from '@nestjs/common';
-import { CreateProfileRequestDTO, GetAllProfilesRequestDTO } from '../../dto/request/profile-request-dto';
+import {
+  CreateProfileRequestDTO,
+  GetAllProfilesRequestDTO,
+} from '../../dtos/request/profile-request';
 
 @Injectable()
 export class ProfileRepository {
@@ -28,7 +31,7 @@ export class ProfileRepository {
 
       await tx.profilePermission.createMany({
         data: req.permission_ids.map((permission_id) => ({
-          profileId: profile.id,
+          profile_id: profile.id,
           permission_id,
         })),
       });
@@ -43,14 +46,23 @@ export class ProfileRepository {
         ? { contains: filters.name, mode: 'insensitive' as const }
         : undefined,
       is_active:
-        filters.is_active !== undefined
-          ? filters.is_active === 'true'
-          : undefined,
+        filters.is_active !== undefined ? filters.is_active : undefined,
     };
 
     return await this.db.profile.findMany({
       where,
-      include: { permissions: true },
+      take: filters.per_page,
+      skip: (filters.page - 1) * filters.per_page,
+      select: {
+        id: true,
+        name: true,
+        is_active: true,
+        created_at: true,
+        updated_at: true,
+        permissions: {
+          select: { permission_id: true },
+        },
+      },
       orderBy: { name: 'asc' },
     });
   }

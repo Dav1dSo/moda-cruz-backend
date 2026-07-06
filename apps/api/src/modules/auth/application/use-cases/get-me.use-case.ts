@@ -1,13 +1,14 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { AuthRepository } from '../../domain/repository';
-import { MeResponseDTO } from '../../dtos/response/auth-response-dto';
+import { AuthRepository } from '../../infrastructure/repositories/auth.repository';
+import { MeResponseDTO } from '../../dtos/response/auth-response';
 
 @Injectable()
 export class GetMeUseCase {
   constructor(private readonly userRepository: AuthRepository) {}
 
   async execute(email: string): Promise<MeResponseDTO> {
-    const user = await this.userRepository.getUserByEmail(email);
+    const user =
+      await this.userRepository.findUserWithPermissionsByEmail(email);
 
     if (!user || user.deleted_at != null || !user.is_active) {
       throw new UnauthorizedException('Usuário inválido');

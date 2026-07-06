@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
-import { ProfileRepository } from '../../domain/repositories/profile.repository';
+import { ProfileRepository } from '../../infrastructure/repositories/profile.repository';
 
 @Injectable()
 export class DeleteProfileUseCase {
@@ -10,7 +10,7 @@ export class DeleteProfileUseCase {
     const profile = await this.profileRepository.findById(id);
 
     if (!profile) {
-      throw new NotFoundException('Profile not found');
+      throw new NotFoundException('Perfil não encontrado');
     }
 
     await this.profileRepository.delete(id);

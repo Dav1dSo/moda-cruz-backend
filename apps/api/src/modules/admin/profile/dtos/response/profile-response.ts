@@ -16,8 +16,8 @@ export class GetAllProfilesResponseDTO {
   permission_ids!: number[];
 
   @ApiProperty()
-  created_at!: Date;
+  created_at!: string;
 
   @ApiProperty()
-  updated_at!: Date;
+  updated_at!: string;
 }

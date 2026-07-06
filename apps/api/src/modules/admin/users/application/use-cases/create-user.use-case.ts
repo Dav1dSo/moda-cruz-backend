@@ -2,7 +2,7 @@ import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
 import { CreateUserRequestDTO } from '../../dtos/request/user-request';
-import { UserRepository } from '../../domain/repositories/users.repository';
+import { UserRepository } from '../../infrastructure/repositories/user.repository';
 import { NOTIFICATIONS_CLIENT } from '@contracts/auth/reset-password-requested.event';
 import { USER_CREATED_EVENT } from '@contracts/users/user-created.event';
 import type { UserCreatedEvent } from '@contracts/users/user-created.event';

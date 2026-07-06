@@ -12,22 +12,22 @@ import {
 } from '@nestjs/common';
 import {
   CreateUserRequestDTO,
+  GetAllUsersFiltersDTO,
   UpdateUserRequestDTO,
 } from './dtos/request/user-request';
 import { ResponseDefaultDTO } from '../../../shared/shared.dtos';
-import { GetAllUsersUseCase } from './application/use-cases/getall-users.use-case';
+import { GetAllUsersUseCase } from './application/use-cases/get-all-users.use-case';
 import { FindUserUseCase } from './application/use-cases/find-user.use-case';
 import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { DeleteUserUseCase } from './application/use-cases/delete-user.use-case';
 import {
-  GetAllUsersFiltersDTO,
   GetAllUsersResponseDTO,
   GetUserResponseDTO,
 } from './dtos/response/user-response';
 import { UpdateUserUseCase } from './application/use-cases/update-user.use-case';
 import { AuthLoginRequired } from '../../auth/guards/auth.guard';
 import { Permissions } from '../../auth/decorators/permissions-decorator';
-import { CreateUserUseCase } from './application/use-cases/create-users.use-case';
+import { CreateUserUseCase } from './application/use-cases/create-user.use-case';
 
 @Controller('users')
 export class UsersController {
@@ -56,10 +56,7 @@ export class UsersController {
   async create(
     @Body() userData: CreateUserRequestDTO,
   ): Promise<ResponseDefaultDTO> {
-    await this.createUserUseCase.execute(userData);
-    return {
-      message: 'User created successfully',
-    };
+    return await this.createUserUseCase.execute(userData);
   }
 
   @ApiBearerAuth()
@@ -89,10 +86,10 @@ export class UsersController {
   })
   @Put(':id')
   async updateUser(
-    @Param('id', ParseIntPipe) user_id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() req: UpdateUserRequestDTO,
   ): Promise<ResponseDefaultDTO> {
-    return await this.updateUserUseCase.execute(req, user_id);
+    return await this.updateUserUseCase.execute(req, id);
   }
 
   @ApiBearerAuth()

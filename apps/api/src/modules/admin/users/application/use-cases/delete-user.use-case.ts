@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
-import { UserRepository } from '../../domain/repositories/users.repository';
+import { UserRepository } from '../../infrastructure/repositories/user.repository';
 
 @Injectable()
 export class DeleteUserUseCase {
@@ -10,13 +10,13 @@ export class DeleteUserUseCase {
     const user = await this.userRepository.findById(id);
 
     if (!user) {
-      throw new NotFoundException('Usuário inválido!');
+      throw new NotFoundException('Usuário não encontrado');
     }
 
     await this.userRepository.deleteUser(id);
 
     return {
-      message: 'User deleted successfully',
+      message: 'Usuário removido com sucesso',
     };
   }
 }

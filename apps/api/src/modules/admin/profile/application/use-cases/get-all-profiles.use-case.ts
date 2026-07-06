@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { GetAllProfilesRequestDTO } from '../../dto/request/profile-request-dto';
-import { GetAllProfilesResponseDTO } from '../../dto/response/profile-respone-dto';
-import { ProfileRepository } from '../../domain/repositories/profile.repository';
+import { GetAllProfilesRequestDTO } from '../../dtos/request/profile-request';
+import { GetAllProfilesResponseDTO } from '../../dtos/response/profile-response';
+import { ProfileRepository } from '../../infrastructure/repositories/profile.repository';
 
 @Injectable()
 export class GetAllProfilesUseCase {
@@ -19,8 +19,8 @@ export class GetAllProfilesUseCase {
       permission_ids: profile.permissions.map(
         (permission) => permission.permission_id,
       ),
-      created_at: profile.created_at,
-      updated_at: profile.updated_at,
+      created_at: profile.created_at.toISOString(),
+      updated_at: profile.updated_at.toISOString(),
     }));
   }
 }

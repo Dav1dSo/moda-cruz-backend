@@ -199,30 +199,30 @@ model Permission {
 
 model ProfilePermission {
   id            Int      @id @default(autoincrement())
-  profileId     Int
+  profile_id    Int
   permission_id Int
   created_at    DateTime @default(now())
 
-  profile    Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profile    Profile    @relation(fields: [profile_id], references: [id], onDelete: Cascade)
   permission Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
 
-  @@unique([profileId, permission_id])
+  @@unique([profile_id, permission_id])
   @@index([permission_id])
   @@map("profile_permissions")
 }
 
 model UserProfile {
   id         Int      @id @default(autoincrement())
-  userId     Int
-  profileId  Int
+  user_id    Int
+  profile_id Int
   created_at DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  updated_at DateTime @updatedAt
 
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
 
-  @@unique([userId, profileId])
-  @@index([profileId])
+  @@unique([user_id, profile_id])
+  @@index([profile_id])
   @@map("user_profiles")
 }
 

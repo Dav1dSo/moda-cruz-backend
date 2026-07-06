@@ -5,7 +5,7 @@ import { GetAllProfilesUseCase } from './application/use-cases/get-all-profiles.
 import { AuthModule } from '../../auth/auth.module';
 import { DeleteProfileUseCase } from './application/use-cases/delete-profile.use-case';
 import { UpdateProfileUseCase } from './application/use-cases/update-profile.use-case';
-import { ProfileRepository } from './domain/repositories/profile.repository';
+import { ProfileRepository } from './infrastructure/repositories/profile.repository';
 
 @Module({
   imports: [AuthModule],

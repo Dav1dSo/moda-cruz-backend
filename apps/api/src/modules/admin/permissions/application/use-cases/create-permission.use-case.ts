@@ -1,7 +1,7 @@
 import { ConflictException, Injectable } from '@nestjs/common';
-import { CreatePermissionRequestDTO } from '../../dto/request/permisions-request-dto';
+import { CreatePermissionRequestDTO } from '../../dtos/request/permission-request';
 import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
-import { PermissionRepository } from '../../domain/repositories/permission.repository';
+import { PermissionRepository } from '../../infrastructure/repositories/permission.repository';
 
 @Injectable()
 export class CreatePermissionUseCase {
@@ -14,6 +14,12 @@ export class CreatePermissionUseCase {
 
     if (existingPermission) {
       throw new ConflictException('Permissão já cadastrada');
+    }
+
+    const existingKey = await this.permissionRepository.findByKey(req.key);
+
+    if (existingKey) {
+      throw new ConflictException('Chave de permissão já cadastrada');
     }
 
     await this.permissionRepository.create(req);

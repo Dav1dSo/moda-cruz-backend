@@ -8,17 +8,18 @@ import {
   Delete,
   ParseIntPipe,
   Param,
+  Put,
 } from '@nestjs/common';
 import {
   CreateProfileRequestDTO,
   GetAllProfilesRequestDTO,
   UpdateProfileRequestDTO,
-} from './dto/request/profile-request-dto';
+} from './dtos/request/profile-request';
 import { CreateProfileUseCase } from './application/use-cases/create-profile.use-case';
-import { GetAllProfilesResponseDTO } from './dto/response/profile-respone-dto';
+import { GetAllProfilesResponseDTO } from './dtos/response/profile-response';
 import { GetAllProfilesUseCase } from './application/use-cases/get-all-profiles.use-case';
 import { AuthLoginRequired } from '../../auth/guards/auth.guard';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { Permissions } from '../../auth/decorators/permissions-decorator';
 import { DeleteProfileUseCase } from './application/use-cases/delete-profile.use-case';
 import { ResponseDefaultDTO } from '../../../shared/shared.dtos';
@@ -37,7 +38,9 @@ export class ProfileController {
   @UseGuards(AuthLoginRequired)
   @Permissions('profile.create')
   @Post()
-  async create(@Body() req: CreateProfileRequestDTO) {
+  async create(
+    @Body() req: CreateProfileRequestDTO,
+  ): Promise<ResponseDefaultDTO> {
     return await this.createProfileUseCase.execute(req);
   }
 
@@ -54,8 +57,14 @@ export class ProfileController {
   @ApiBearerAuth()
   @UseGuards(AuthLoginRequired)
   @Permissions('profile.delete')
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'ID do perfil',
+    example: 1,
+  })
   @Delete(':id')
-  async delete(
+  async remove(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<ResponseDefaultDTO> {
     return await this.deleteProfileUseCase.execute(id);
@@ -64,8 +73,14 @@ export class ProfileController {
   @ApiBearerAuth()
   @UseGuards(AuthLoginRequired)
   @Permissions('profile.update')
-  @Post(':id')
-  async update(
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'ID do perfil',
+    example: 1,
+  })
+  @Put(':id')
+  async updateProfile(
     @Param('id', ParseIntPipe) id: number,
     @Body() req: UpdateProfileRequestDTO,
   ): Promise<ResponseDefaultDTO> {

@@ -8,6 +8,13 @@ import {
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 
+interface JwtUserPayload {
+  sub: number;
+  email: string;
+  permissions?: string[];
+  is_platform_admin?: boolean;
+}
+
 @Injectable()
 export class AuthLoginRequired implements CanActivate {
   constructor(
@@ -15,8 +22,11 @@ export class AuthLoginRequired implements CanActivate {
     private readonly reflector: Reflector,
   ) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req = context.switchToHttp().getRequest();
+  canActivate(context: ExecutionContext): boolean {
+    const req = context.switchToHttp().getRequest<{
+      headers: { authorization?: string };
+      user?: JwtUserPayload;
+    }>();
 
     const authHeader = req.headers.authorization;
 
@@ -30,10 +40,10 @@ export class AuthLoginRequired implements CanActivate {
       throw new UnauthorizedException('Token inválido');
     }
 
-    let payload: any;
+    let payload: JwtUserPayload;
 
     try {
-      payload = await this.jwtService.verify(token);
+      payload = this.jwtService.verify<JwtUserPayload>(token);
     } catch {
       throw new UnauthorizedException('Token expirado ou inválido');
     }

@@ -1,7 +1,7 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
-import { CreateProfileRequestDTO } from '../../dto/request/profile-request-dto';
-import { ProfileRepository } from '../../domain/repositories/profile.repository';
+import { CreateProfileRequestDTO } from '../../dtos/request/profile-request';
+import { ProfileRepository } from '../../infrastructure/repositories/profile.repository';
 
 @Injectable()
 export class CreateProfileUseCase {

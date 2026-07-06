@@ -4,16 +4,16 @@ import {
   ConfirmResetPasswordRequestDTO,
   RegisterRequestDTO,
   ResetPasswordRequestDTO,
-} from './dtos/request/auth-service-dto';
-import { AuthLoginService } from './application/use-cases/login.use-case';
+} from './dtos/request/auth-request';
+import { LoginUseCase } from './application/use-cases/login.use-case';
 import {
   LoginResponseDTO,
   MeResponseDTO,
   RefreshTokenResponseDTO,
-} from './dtos/response/auth-response-dto';
-import { AuthRefreshTokenService } from './application/use-cases/refresh-token.use-case';
+} from './dtos/response/auth-response';
+import { RefreshTokenUseCase } from './application/use-cases/refresh-token.use-case';
 import type { Request, Response } from 'express';
-import { ResetPasswordService } from './application/use-cases/reset-password.use-case';
+import { ResetPasswordUseCase } from './application/use-cases/reset-password.use-case';
 import { ConfirmResetPasswordUseCase } from './application/use-cases/confirm-reset-password.use-case';
 import { RegisterCustomerUseCase } from './application/use-cases/register-customer.use-case';
 import { GetMeUseCase } from './application/use-cases/get-me.use-case';
@@ -34,10 +34,10 @@ const REFRESH_TOKEN_COOKIE_OPTIONS = {
 @Controller('auth')
 export class AuthController {
   constructor(
-    private readonly authLoginServive: AuthLoginService,
-    private readonly authRefreshTokenService: AuthRefreshTokenService,
-    private readonly authResetPasswordService: ResetPasswordService,
-    private readonly authConfirmResetPassword: ConfirmResetPasswordUseCase,
+    private readonly loginUseCase: LoginUseCase,
+    private readonly refreshTokenUseCase: RefreshTokenUseCase,
+    private readonly resetPasswordUseCase: ResetPasswordUseCase,
+    private readonly confirmResetPasswordUseCase: ConfirmResetPasswordUseCase,
     private readonly registerCustomerUseCase: RegisterCustomerUseCase,
     private readonly getMeUseCase: GetMeUseCase,
   ) {}
@@ -52,7 +52,7 @@ export class AuthController {
     @Body() req: AuthLoginRequestDTO,
     @Res({ passthrough: true }) res: Response,
   ): Promise<LoginResponseDTO> {
-    const result = await this.authLoginServive.execute(req);
+    const result = await this.loginUseCase.execute(req);
 
     res.cookie(REFRESH_TOKEN_COOKIE, result.refreshToken, {
       ...REFRESH_TOKEN_COOKIE_OPTIONS,
@@ -68,8 +68,8 @@ export class AuthController {
 
   @Post('/refresh')
   async refresh(@Req() req: Request): Promise<RefreshTokenResponseDTO> {
-    return await this.authRefreshTokenService.execute({
-      refreshToken: req.cookies.refreshToken,
+    return await this.refreshTokenUseCase.execute({
+      refreshToken: req.cookies.refreshToken as string,
     });
   }
 
@@ -82,7 +82,9 @@ export class AuthController {
   @ApiBearerAuth()
   @UseGuards(AuthLoginRequired)
   @Get('/me')
-  async me(@CurrentUser() currentUser: { email: string }): Promise<MeResponseDTO> {
+  async me(
+    @CurrentUser() currentUser: { email: string },
+  ): Promise<MeResponseDTO> {
     return await this.getMeUseCase.execute(currentUser.email);
   }
 
@@ -90,13 +92,13 @@ export class AuthController {
   async resetPassword(
     @Body() req: ResetPasswordRequestDTO,
   ): Promise<ResponseDefaultDTO> {
-    return await this.authResetPasswordService.execute(req);
+    return await this.resetPasswordUseCase.execute(req);
   }
 
   @Post('/confirm-reset-password')
   async confirmResetPassword(
     @Body() req: ConfirmResetPasswordRequestDTO,
   ): Promise<ResponseDefaultDTO> {
-    return await this.authConfirmResetPassword.execute(req);
+    return await this.confirmResetPasswordUseCase.execute(req);
   }
 }

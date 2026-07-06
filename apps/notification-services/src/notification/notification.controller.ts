@@ -22,8 +22,7 @@ export class NotificationController {
   }
 
   @EventPattern(USER_CREATED_EVENT)
-  async sendWelcomeEmail(
-    @Payload() event: UserCreatedEvent): Promise<void> {
+  async sendWelcomeEmail(@Payload() event: UserCreatedEvent): Promise<void> {
     await this.sendWelcomeEmailUseCase.execute(event);
   }
 }
