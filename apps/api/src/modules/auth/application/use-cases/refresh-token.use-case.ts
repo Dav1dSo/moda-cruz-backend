@@ -2,17 +2,19 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshTokenRequestDTO } from '../../dtos/request/auth-request';
 import { RefreshTokenResponseDTO } from '../../dtos/response/auth-response';
+import { AuthRepository } from '../../infrastructure/repositories/auth.repository';
 
 interface RefreshTokenPayload {
   sub: number;
-  email: string;
-  permissions?: string[];
-  is_platform_admin?: boolean;
+  type?: string;
 }
 
 @Injectable()
 export class RefreshTokenUseCase {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly userRepository: AuthRepository,
+  ) {}
 
   async execute(
     request: RefreshTokenRequestDTO,
@@ -34,12 +36,34 @@ export class RefreshTokenUseCase {
       throw new UnauthorizedException('Refresh token inválido');
     }
 
+    if (!payload.sub) {
+      throw new UnauthorizedException('Refresh token inválido');
+    }
+
+    const user = await this.userRepository.findUserWithPermissionsById(
+      payload.sub,
+    );
+
+    if (!user || user.deleted_at != null || !user.is_active) {
+      throw new UnauthorizedException('Refresh token inválido');
+    }
+
+    const permissions = Array.from(
+      new Set(
+        user.profiles.flatMap((profileRelation) =>
+          profileRelation.profile.permissions.map(
+            (profilePermission) => profilePermission.permission.key,
+          ),
+        ),
+      ),
+    );
+
     const accessToken = await this.jwtService.signAsync(
       {
-        sub: payload.sub,
-        email: payload.email,
-        permissions: payload.permissions ?? [],
-        is_platform_admin: payload.is_platform_admin ?? false,
+        sub: user.id,
+        email: user.email,
+        permissions,
+        is_platform_admin: user.is_platform_admin,
       },
       {
         secret: process.env.JWT_SECRET,

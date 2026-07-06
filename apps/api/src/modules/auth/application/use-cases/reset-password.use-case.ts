@@ -33,7 +33,7 @@ export class ResetPasswordUseCase {
         type: 'reset-password',
       },
       {
-        secret: process.env.JWT_RESET_PASSWORD_SECRET || process.env.JWT_SECRET,
+        secret: process.env.JWT_RESET_PASSWORD_SECRET,
         expiresIn: '1d',
       },
     );

@@ -13,6 +13,7 @@ interface JwtUserPayload {
   email: string;
   permissions?: string[];
   is_platform_admin?: boolean;
+  type?: string;
 }
 
 @Injectable()
@@ -46,6 +47,10 @@ export class AuthLoginRequired implements CanActivate {
       payload = this.jwtService.verify<JwtUserPayload>(token);
     } catch {
       throw new UnauthorizedException('Token expirado ou inválido');
+    }
+
+    if (payload.type) {
+      throw new UnauthorizedException('Token inválido');
     }
 
     req.user = payload;

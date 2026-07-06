@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -6,10 +7,14 @@ import {
 import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
 import { UpdateProfileRequestDTO } from '../../dtos/request/profile-request';
 import { ProfileRepository } from '../../infrastructure/repositories/profile.repository';
+import { PermissionRepository } from '../../../permissions/infrastructure/repositories/permission.repository';
 
 @Injectable()
 export class UpdateProfileUseCase {
-  constructor(private readonly profileRepository: ProfileRepository) {}
+  constructor(
+    private readonly profileRepository: ProfileRepository,
+    private readonly permissionRepository: PermissionRepository,
+  ) {}
 
   async execute(
     id: number,
@@ -32,9 +37,24 @@ export class UpdateProfileUseCase {
       }
     }
 
+    let uniquePermissionIds: number[] | undefined;
+
+    if (req.permission_ids !== undefined) {
+      uniquePermissionIds = [...new Set(req.permission_ids)];
+      const foundPermissionsCount =
+        await this.permissionRepository.countByIds(uniquePermissionIds);
+
+      if (foundPermissionsCount < uniquePermissionIds.length) {
+        throw new BadRequestException('IDs de permissão inválidos.');
+      }
+    }
+
     await this.profileRepository.update(id, {
       ...(req.name && { name: req.name }),
       ...(req.is_active !== undefined && { is_active: req.is_active }),
+      ...(uniquePermissionIds !== undefined && {
+        permission_ids: uniquePermissionIds,
+      }),
     });
 
     return { message: 'Perfil atualizado com sucesso' };

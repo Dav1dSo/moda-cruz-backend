@@ -7,29 +7,31 @@ import { RegisterRequestDTO } from '../../dtos/request/auth-request';
 export class AuthRepository {
   constructor(private readonly db: PrismaService) {}
 
-  async getUserByEmail(email: string) {
-    return await this.db.user.findFirst({
-      where: { email },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        is_platform_admin: true,
-        deleted_at: true,
-        is_active: true,
-        password_hash: true,
-        profiles: {
-          select: {
-            profile: {
-              select: {
-                id: true,
-                name: true,
-                permissions: {
-                  select: {
-                    permission: {
-                      select: {
-                        key: true,
-                      },
+  /**
+   * Select comum de usuário + perfis + permissões, usado pelas variantes de
+   * busca de usuário para autenticação. Nunca inclui `password_hash` — a
+   * única variante que precisa do hash (`getUserByEmail`) o adiciona
+   * explicitamente por cima deste select base.
+   */
+  private get userWithPermissionsSelect() {
+    return {
+      id: true,
+      name: true,
+      email: true,
+      is_platform_admin: true,
+      deleted_at: true,
+      is_active: true,
+      profiles: {
+        select: {
+          profile: {
+            select: {
+              id: true,
+              name: true,
+              permissions: {
+                select: {
+                  permission: {
+                    select: {
+                      key: true,
                     },
                   },
                 },
@@ -37,6 +39,16 @@ export class AuthRepository {
             },
           },
         },
+      },
+    } as const;
+  }
+
+  async getUserByEmail(email: string) {
+    return await this.db.user.findFirst({
+      where: { email },
+      select: {
+        ...this.userWithPermissionsSelect,
+        password_hash: true,
       },
     });
   }
@@ -44,33 +56,14 @@ export class AuthRepository {
   async findUserWithPermissionsByEmail(email: string) {
     return await this.db.user.findFirst({
       where: { email },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        is_platform_admin: true,
-        deleted_at: true,
-        is_active: true,
-        profiles: {
-          select: {
-            profile: {
-              select: {
-                id: true,
-                name: true,
-                permissions: {
-                  select: {
-                    permission: {
-                      select: {
-                        key: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+      select: this.userWithPermissionsSelect,
+    });
+  }
+
+  async findUserWithPermissionsById(id: number) {
+    return await this.db.user.findFirst({
+      where: { id },
+      select: this.userWithPermissionsSelect,
     });
   }
 

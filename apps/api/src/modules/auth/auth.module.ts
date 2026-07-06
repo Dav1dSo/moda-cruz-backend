@@ -49,6 +49,14 @@ import {
           throw new Error('JWT_SECRET não configurado');
         }
 
+        const resetPasswordSecret = configService.get<string>(
+          'JWT_RESET_PASSWORD_SECRET',
+        );
+
+        if (!resetPasswordSecret) {
+          throw new Error('JWT_RESET_PASSWORD_SECRET não configurado');
+        }
+
         return {
           secret,
           signOptions: {

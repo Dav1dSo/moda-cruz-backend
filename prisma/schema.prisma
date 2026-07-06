@@ -184,7 +184,7 @@ model Profile {
 model Permission {
   id          Int      @id @default(autoincrement())
   key         String   @unique @db.VarChar(120)
-  name        String   @db.VarChar(160)
+  name        String   @unique @db.VarChar(160)
   description String?  @db.Text
   module      String   @db.VarChar(80)
   is_critical Boolean  @default(false)

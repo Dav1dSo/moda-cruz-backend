@@ -6,9 +6,10 @@ import { AuthModule } from '../../auth/auth.module';
 import { DeleteProfileUseCase } from './application/use-cases/delete-profile.use-case';
 import { UpdateProfileUseCase } from './application/use-cases/update-profile.use-case';
 import { ProfileRepository } from './infrastructure/repositories/profile.repository';
+import { PermissionsModule } from '../permissions/permissions.module';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, PermissionsModule],
   controllers: [ProfileController],
   providers: [
     CreateProfileUseCase,

@@ -7,6 +7,10 @@ export class GetMeUseCase {
   constructor(private readonly userRepository: AuthRepository) {}
 
   async execute(email: string): Promise<MeResponseDTO> {
+    if (!email) {
+      throw new UnauthorizedException('Usuário inválido');
+    }
+
     const user =
       await this.userRepository.findUserWithPermissionsByEmail(email);
 

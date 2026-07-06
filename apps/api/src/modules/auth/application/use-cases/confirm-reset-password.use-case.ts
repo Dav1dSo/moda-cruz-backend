@@ -23,7 +23,7 @@ export class ConfirmResetPasswordUseCase {
 
     try {
       payload = this.jwtService.verify(req.token, {
-        secret: process.env.JWT_RESET_PASSWORD_SECRET || process.env.JWT_SECRET,
+        secret: process.env.JWT_RESET_PASSWORD_SECRET,
       });
     } catch {
       throw new UnauthorizedException(

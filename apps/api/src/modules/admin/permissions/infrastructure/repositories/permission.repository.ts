@@ -4,6 +4,7 @@ import {
   CreatePermissionRequestDTO,
   UpdatePermissionRequestDTO,
 } from '../../dtos/request/permission-request';
+import { isPrismaNotFoundError } from 'apps/api/src/shared/utils/prisma-errors';
 
 @Injectable()
 export class PermissionRepository {
@@ -58,7 +59,37 @@ export class PermissionRepository {
     });
   }
 
-  async delete(id: number) {
-    await this.db.permission.delete({ where: { id } });
+  async countByIds(ids: number[]) {
+    return await this.db.permission.count({
+      where: { id: { in: ids } },
+    });
+  }
+
+  async deleteIfUnused(id: number): Promise<{
+    deleted: boolean;
+    dependentsCount: number;
+    notFound?: boolean;
+  }> {
+    return await this.db.$transaction(async (tx) => {
+      const dependentsCount = await tx.profilePermission.count({
+        where: { permission_id: id },
+      });
+
+      if (dependentsCount > 0) {
+        return { deleted: false, dependentsCount };
+      }
+
+      try {
+        await tx.permission.delete({ where: { id } });
+      } catch (error) {
+        if (isPrismaNotFoundError(error)) {
+          return { deleted: false, dependentsCount: 0, notFound: true };
+        }
+
+        throw error;
+      }
+
+      return { deleted: true, dependentsCount: 0 };
+    });
   }
 }

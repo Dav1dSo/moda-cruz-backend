@@ -71,4 +71,16 @@ export class UpdateProfileRequestDTO {
   @IsOptional()
   @IsBoolean()
   is_active?: boolean;
+
+  @ApiProperty({
+    description: 'Ids de permissões vinculadas',
+    type: Number,
+    isArray: true,
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  @Type(() => Number)
+  permission_ids?: number[];
 }

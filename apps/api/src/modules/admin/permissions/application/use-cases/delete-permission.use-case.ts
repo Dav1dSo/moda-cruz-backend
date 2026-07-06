@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
 import { PermissionRepository } from '../../infrastructure/repositories/permission.repository';
 
@@ -13,7 +17,21 @@ export class DeletePermissionUseCase {
       throw new NotFoundException('Permissão não encontrada');
     }
 
-    await this.permissionRepository.delete(id);
+    if (permission.is_critical) {
+      throw new BadRequestException('Permissão crítica não pode ser removida');
+    }
+
+    const result = await this.permissionRepository.deleteIfUnused(id);
+
+    if (result.notFound) {
+      throw new NotFoundException('Permissão não encontrada');
+    }
+
+    if (!result.deleted) {
+      throw new BadRequestException(
+        `Não é possível remover: permissão vinculada a ${result.dependentsCount} perfil(is).`,
+      );
+    }
 
     return {
       message: 'Permissão removida com sucesso',

@@ -17,5 +17,6 @@ import { PermissionRepository } from './infrastructure/repositories/permission.r
     GetAllPermissionsUseCase,
     PermissionRepository,
   ],
+  exports: [PermissionRepository],
 })
 export class PermissionsModule {}

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -19,6 +20,10 @@ export class UpdatePermissionUseCase {
 
     if (!permission) {
       throw new NotFoundException('Permissão não encontrada');
+    }
+
+    if (permission.is_critical) {
+      throw new BadRequestException('Permissão crítica não pode ser alterada');
     }
 
     const permissionExists =

@@ -1,13 +1,17 @@
-import {
-  BadRequestException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthLoginRequestDTO } from '../../dtos/request/auth-request';
 import { RequiredLoginResponseDTO } from '../../dtos/response/auth-response';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { AuthRepository } from '../../infrastructure/repositories/auth.repository';
+
+/**
+ * Hash bcrypt fixo (sem senha real associada), usado apenas para igualar o
+ * tempo de resposta do login quando o usuário não existe/está inativo,
+ * evitando enumeração de emails por timing attack.
+ */
+const DUMMY_PASSWORD_HASH =
+  '$2b$12$XdQhqfqJ8VzTM7QuUHmXZ.YzePyHGc/FyC.2rBf4Ni8UTnsYgRs0q';
 
 @Injectable()
 export class LoginUseCase {
@@ -19,7 +23,9 @@ export class LoginUseCase {
   async execute(req: AuthLoginRequestDTO): Promise<RequiredLoginResponseDTO> {
     const user = await this.userRepository.getUserByEmail(req.email);
 
-    if (!user || user.deleted_at != null) {
+    if (!user || user.deleted_at != null || !user.is_active) {
+      await bcrypt.compare(req.password, DUMMY_PASSWORD_HASH);
+
       throw new UnauthorizedException('Credenciais inválidas!');
     }
 
@@ -30,10 +36,6 @@ export class LoginUseCase {
 
     if (!passwordMatch) {
       throw new UnauthorizedException('Credenciais inválidas!');
-    }
-
-    if (!user.is_active) {
-      throw new BadRequestException('Usuário inativo');
     }
 
     const permissions = Array.from(
