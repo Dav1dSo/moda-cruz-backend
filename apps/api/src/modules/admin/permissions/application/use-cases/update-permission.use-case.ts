@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { UpdatePermissionRequestDTO } from '../../dtos/request/permission-request';
-import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
+import { ResponseDefaultDTO } from '@shared/dtos';
 import { PermissionRepository } from '../../infrastructure/repositories/permission.repository';
 
 @Injectable()

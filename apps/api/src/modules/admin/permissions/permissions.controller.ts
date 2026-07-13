@@ -19,9 +19,9 @@ import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { UpdatePermissionUseCase } from './application/use-cases/update-permission.use-case';
 import { DeletePermissionUseCase } from './application/use-cases/delete-permission.use-case';
 import { GetAllPermissionsUseCase } from './application/use-cases/get-all-permissions.use-case';
-import { Permissions } from '../../auth/decorators/permissions-decorator';
-import { AuthLoginRequired } from '../../auth/guards/auth.guard';
-import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
+import { Permissions } from '../../auth/decorators/permissions.decorator';
+import { AuthLoginRequiredGuard } from '../../auth/guards/auth-login-required.guard';
+import { ResponseDefaultDTO } from '@shared/dtos';
 
 @Controller('permissions')
 export class PermissionsController {
@@ -33,7 +33,7 @@ export class PermissionsController {
   ) {}
 
   @ApiBearerAuth()
-  @UseGuards(AuthLoginRequired)
+  @UseGuards(AuthLoginRequiredGuard)
   @Permissions('permission.create')
   @Post()
   async create(
@@ -43,7 +43,7 @@ export class PermissionsController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthLoginRequired)
+  @UseGuards(AuthLoginRequiredGuard)
   @Permissions('permission.update')
   @ApiParam({
     name: 'id',
@@ -60,7 +60,7 @@ export class PermissionsController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthLoginRequired)
+  @UseGuards(AuthLoginRequiredGuard)
   @Permissions('permission.delete')
   @ApiParam({
     name: 'id',
@@ -76,7 +76,7 @@ export class PermissionsController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthLoginRequired)
+  @UseGuards(AuthLoginRequiredGuard)
   @Permissions('permission.read')
   @Get()
   async findAll(): Promise<GetPermissionResponseDTO[]> {

@@ -4,7 +4,7 @@ import {
   CreatePermissionRequestDTO,
   UpdatePermissionRequestDTO,
 } from '../../dtos/request/permission-request';
-import { isPrismaNotFoundError } from 'apps/api/src/shared/utils/prisma-errors';
+import { isPrismaNotFoundError } from '@shared/utils/prisma-errors';
 
 @Injectable()
 export class PermissionRepository {
@@ -56,12 +56,6 @@ export class PermissionRepository {
         key: req.key,
         module: req.module,
       },
-    });
-  }
-
-  async countByIds(ids: number[]) {
-    return await this.db.permission.count({
-      where: { id: { in: ids } },
     });
   }
 
