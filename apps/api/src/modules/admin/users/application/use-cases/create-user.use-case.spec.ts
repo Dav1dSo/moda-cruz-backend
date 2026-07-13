@@ -22,7 +22,10 @@ describe('CreateUserUseCase', () => {
   let userRepository: jest.Mocked<
     Pick<
       UserRepository,
-      'getUserByEmail' | 'getUserByPhone' | 'findExistingProfileIds' | 'createUser'
+      | 'getUserByEmail'
+      | 'getUserByPhone'
+      | 'findExistingProfileIds'
+      | 'createUser'
     >
   >;
   let brokerClient: jest.Mocked<Pick<ClientProxy, 'emit'>>;

@@ -63,9 +63,7 @@ describe('FindProductUseCase', () => {
   it('lança NotFoundException quando o produto não existe', async () => {
     productRepository.findById.mockResolvedValue(null);
 
-    await expect(useCase.execute(productId)).rejects.toThrow(
-      NotFoundException,
-    );
+    await expect(useCase.execute(productId)).rejects.toThrow(NotFoundException);
   });
 
   it('mapeia todos os campos do produto, calcula o estoque total e formata as datas em ISO', async () => {
