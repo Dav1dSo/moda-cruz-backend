@@ -12,20 +12,23 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { PaginationRequestDTO } from 'apps/api/src/shared/shared.dtos';
+import { PaginationRequestDTO } from '@shared/dtos';
 
 export class CreateUserRequestDTO {
   @ApiProperty({ description: 'Nome completo' })
   @IsString()
+  @MaxLength(255)
   @Matches(/^[A-Za-zÀ-ÿ\s]+$/)
   name!: string;
 
   @ApiProperty({ description: 'Endereço de email válido' })
   @IsEmail()
+  @MaxLength(255)
   email!: string;
 
   @ApiProperty({ description: 'Número de phone válido' })
   @IsString()
+  @MaxLength(32)
   phone!: string;
 
   @ApiProperty({
@@ -60,15 +63,18 @@ export class CreateUserRequestDTO {
 export class UpdateUserRequestDTO {
   @ApiProperty({ description: 'Endereço de email válido' })
   @IsEmail()
+  @MaxLength(255)
   email!: string;
 
   @ApiProperty({ description: 'Nome completo' })
   @IsString()
+  @MaxLength(255)
   @Matches(/^[A-Za-zÀ-ÿ\s]+$/)
   name!: string;
 
   @ApiProperty({ description: 'Número de phone válido' })
   @IsString()
+  @MaxLength(32)
   phone!: string;
 
   @ApiProperty({ description: 'Status do usuário', required: false })

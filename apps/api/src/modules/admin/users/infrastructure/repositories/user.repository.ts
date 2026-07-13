@@ -18,11 +18,15 @@ export class UserRepository {
     });
   }
 
-  async findByEmailOrPhoneExcludingId(id: number, req: UpdateUserRequestDTO) {
+  async findByEmailOrPhoneExcludingId(
+    id: number,
+    email: string,
+    phone: string,
+  ) {
     return await this.db.user.findFirst({
       where: {
         NOT: { id },
-        OR: [{ email: req.email }, { phone: req.phone }],
+        OR: [{ email }, { phone }],
       },
       select: { id: true },
     });
@@ -96,7 +100,18 @@ export class UserRepository {
     });
   }
 
-  async createUser(req: CreateUserRequestDTO) {
+  async findExistingProfileIds(ids: number[]): Promise<number[]> {
+    if (ids.length === 0) return [];
+
+    const profiles = await this.db.profile.findMany({
+      where: { id: { in: ids } },
+      select: { id: true },
+    });
+
+    return profiles.map((profile) => profile.id);
+  }
+
+  async createUser(req: CreateUserRequestDTO, profileIds: number[]) {
     return await this.db.$transaction(async (tx) => {
       const user = await tx.user.create({
         data: {
@@ -108,7 +123,7 @@ export class UserRepository {
       });
 
       await tx.userProfile.createMany({
-        data: req.profile_ids.map((profileId) => ({
+        data: profileIds.map((profileId) => ({
           user_id: user.id,
           profile_id: profileId,
         })),
@@ -118,7 +133,11 @@ export class UserRepository {
     });
   }
 
-  async updateUserWithProfiles(id: number, req: UpdateUserRequestDTO) {
+  async updateUserWithProfiles(
+    id: number,
+    req: UpdateUserRequestDTO,
+    profileIds: number[] | undefined,
+  ) {
     await this.db.$transaction(async (tx) => {
       await tx.user.update({
         where: { id },
@@ -130,10 +149,10 @@ export class UserRepository {
         },
       });
 
-      if (req.profile_ids !== undefined) {
+      if (profileIds !== undefined) {
         await tx.userProfile.deleteMany({ where: { user_id: id } });
         await tx.userProfile.createMany({
-          data: req.profile_ids.map((profileId) => ({
+          data: profileIds.map((profileId) => ({
             user_id: id,
             profile_id: profileId,
           })),

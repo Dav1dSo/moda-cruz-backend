@@ -15,7 +15,7 @@ import {
   GetAllUsersFiltersDTO,
   UpdateUserRequestDTO,
 } from './dtos/request/user-request';
-import { ResponseDefaultDTO } from '../../../shared/shared.dtos';
+import { ResponseDefaultDTO } from '@shared/dtos';
 import { GetAllUsersUseCase } from './application/use-cases/get-all-users.use-case';
 import { FindUserUseCase } from './application/use-cases/find-user.use-case';
 import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
@@ -25,8 +25,8 @@ import {
   GetUserResponseDTO,
 } from './dtos/response/user-response';
 import { UpdateUserUseCase } from './application/use-cases/update-user.use-case';
-import { AuthLoginRequired } from '../../auth/guards/auth.guard';
-import { Permissions } from '../../auth/decorators/permissions-decorator';
+import { AuthLoginRequiredGuard } from '../../auth/guards/auth-login-required.guard';
+import { Permissions } from '../../auth/decorators/permissions.decorator';
 import { CreateUserUseCase } from './application/use-cases/create-user.use-case';
 
 @Controller('users')
@@ -40,7 +40,7 @@ export class UsersController {
   ) {}
 
   @ApiBearerAuth()
-  @UseGuards(AuthLoginRequired)
+  @UseGuards(AuthLoginRequiredGuard)
   @Permissions('user.read')
   @Get()
   async findAll(
@@ -50,7 +50,7 @@ export class UsersController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthLoginRequired)
+  @UseGuards(AuthLoginRequiredGuard)
   @Permissions('user.create')
   @Post()
   async create(
@@ -60,7 +60,7 @@ export class UsersController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthLoginRequired)
+  @UseGuards(AuthLoginRequiredGuard)
   @Permissions('user.read')
   @ApiParam({
     name: 'id',
@@ -71,12 +71,12 @@ export class UsersController {
   @Get(':id')
   async findOne(
     @Param('id', ParseIntPipe) id: number,
-  ): Promise<GetUserResponseDTO | null> {
+  ): Promise<GetUserResponseDTO> {
     return await this.findUserUseCase.execute(id);
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthLoginRequired)
+  @UseGuards(AuthLoginRequiredGuard)
   @Permissions('user.update')
   @ApiParam({
     name: 'id',
@@ -93,7 +93,7 @@ export class UsersController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthLoginRequired)
+  @UseGuards(AuthLoginRequiredGuard)
   @Permissions('user.delete')
   @ApiParam({
     name: 'id',

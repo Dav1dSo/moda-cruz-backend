@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserRepository } from '../../infrastructure/repositories/user.repository';
 import { GetUserResponseDTO } from '../../dtos/response/user-response';
 
@@ -6,10 +6,12 @@ import { GetUserResponseDTO } from '../../dtos/response/user-response';
 export class FindUserUseCase {
   constructor(private readonly userRepository: UserRepository) {}
 
-  async execute(id: number): Promise<GetUserResponseDTO | null> {
+  async execute(id: number): Promise<GetUserResponseDTO> {
     const user = await this.userRepository.findById(id);
 
-    if (!user) return null;
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
 
     return {
       id: user.id,

@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
+import { ResponseDefaultDTO } from '@shared/dtos';
 import { UserRepository } from '../../infrastructure/repositories/user.repository';
 
 @Injectable()

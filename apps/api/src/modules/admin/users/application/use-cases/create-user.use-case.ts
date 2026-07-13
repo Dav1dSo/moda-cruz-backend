@@ -1,9 +1,19 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
+import { ResponseDefaultDTO } from '@shared/dtos';
+import {
+  isPrismaForeignKeyConstraintError,
+  isPrismaUniqueConstraintError,
+  uniqueConstraintTargets,
+} from '@shared/utils/prisma-errors';
 import { CreateUserRequestDTO } from '../../dtos/request/user-request';
 import { UserRepository } from '../../infrastructure/repositories/user.repository';
-import { NOTIFICATIONS_CLIENT } from '@contracts/auth/reset-password-requested.event';
+import { NOTIFICATIONS_CLIENT } from '@contracts/notifications';
 import { USER_CREATED_EVENT } from '@contracts/users/user-created.event';
 import type { UserCreatedEvent } from '@contracts/users/user-created.event';
 
@@ -22,7 +32,35 @@ export class CreateUserUseCase {
       throw new ConflictException('Email já cadastrado.');
     }
 
-    await this.userRepository.createUser(req);
+    const profileIds = Array.from(new Set(req.profile_ids));
+
+    const existingProfileIds =
+      await this.userRepository.findExistingProfileIds(profileIds);
+
+    if (existingProfileIds.length !== profileIds.length) {
+      throw new BadRequestException(
+        'Um ou mais perfis informados não existem.',
+      );
+    }
+
+    try {
+      await this.userRepository.createUser(req, profileIds);
+    } catch (error) {
+      if (
+        isPrismaUniqueConstraintError(error) &&
+        uniqueConstraintTargets(error).includes('email')
+      ) {
+        throw new ConflictException('Email já cadastrado.');
+      }
+
+      if (isPrismaForeignKeyConstraintError(error)) {
+        throw new BadRequestException(
+          'Um ou mais perfis informados não existem.',
+        );
+      }
+
+      throw error;
+    }
 
     const event: UserCreatedEvent = {
       name: req.name,
