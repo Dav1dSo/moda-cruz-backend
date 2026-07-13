@@ -9,7 +9,7 @@ import { ResponseDefaultDTO } from '@shared/dtos';
 import {
   isPrismaForeignKeyConstraintError,
   isPrismaUniqueConstraintError,
-  uniqueConstraintTargets,
+  uniqueConstraintCovers,
 } from '@shared/utils/prisma-errors';
 import { CreateUserRequestDTO } from '../../dtos/request/user-request';
 import { UserRepository } from '../../infrastructure/repositories/user.repository';
@@ -48,7 +48,7 @@ export class CreateUserUseCase {
     } catch (error) {
       if (
         isPrismaUniqueConstraintError(error) &&
-        uniqueConstraintTargets(error).includes('email')
+        uniqueConstraintCovers(error, 'email')
       ) {
         throw new ConflictException('Email já cadastrado.');
       }

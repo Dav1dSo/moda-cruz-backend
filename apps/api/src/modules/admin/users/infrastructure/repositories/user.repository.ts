@@ -13,7 +13,7 @@ export class UserRepository {
 
   async getUserByEmail(email: string) {
     return await this.db.user.findFirst({
-      where: { email },
+      where: { email, deleted_at: null },
       select: { id: true },
     });
   }
@@ -26,6 +26,7 @@ export class UserRepository {
     return await this.db.user.findFirst({
       where: {
         NOT: { id },
+        deleted_at: null,
         OR: [{ email }, { phone }],
       },
       select: { id: true },
@@ -34,6 +35,7 @@ export class UserRepository {
 
   async findAll(filters: GetAllUsersFiltersDTO) {
     const where = {
+      deleted_at: null,
       name: filters.name
         ? { contains: filters.name, mode: 'insensitive' as const }
         : undefined,
@@ -78,8 +80,8 @@ export class UserRepository {
   }
 
   async findById(id: number) {
-    return await this.db.user.findUnique({
-      where: { id },
+    return await this.db.user.findFirst({
+      where: { id, deleted_at: null },
       select: {
         id: true,
         name: true,
@@ -162,6 +164,9 @@ export class UserRepository {
   }
 
   async deleteUser(id: number) {
-    await this.db.user.delete({ where: { id } });
+    await this.db.user.update({
+      where: { id },
+      data: { deleted_at: new Date(), is_active: false },
+    });
   }
 }

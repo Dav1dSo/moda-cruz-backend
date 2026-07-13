@@ -56,3 +56,12 @@ export function uniqueConstraintTargets(
 
   return typeof target === 'string' ? [target] : [];
 }
+
+export function uniqueConstraintCovers(
+  error: Prisma.PrismaClientKnownRequestError,
+  field: string,
+): boolean {
+  return uniqueConstraintTargets(error).some(
+    (target) => target === field || target.includes(field),
+  );
+}

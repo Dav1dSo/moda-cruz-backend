@@ -38,7 +38,7 @@ export class AuthRepository {
 
   async getUserByEmail(email: string) {
     return await this.db.user.findFirst({
-      where: { email },
+      where: { email, deleted_at: null },
       select: {
         ...USER_WITH_PERMISSIONS_SELECT,
         password_hash: true,
@@ -48,14 +48,14 @@ export class AuthRepository {
 
   async findUserWithPermissionsByEmail(email: string) {
     return await this.db.user.findFirst({
-      where: { email },
+      where: { email, deleted_at: null },
       select: USER_WITH_PERMISSIONS_SELECT,
     });
   }
 
   async findBasicByEmail(email: string) {
     return await this.db.user.findFirst({
-      where: { email },
+      where: { email, deleted_at: null },
       select: { id: true, name: true, email: true },
     });
   }
@@ -69,7 +69,7 @@ export class AuthRepository {
 
   async findForPasswordResetByEmail(email: string) {
     return await this.db.user.findFirst({
-      where: { email },
+      where: { email, deleted_at: null },
       select: {
         id: true,
         name: true,
