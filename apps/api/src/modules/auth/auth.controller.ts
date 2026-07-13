@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
   AuthLoginRequestDTO,
   ConfirmResetPasswordRequestDTO,
@@ -17,11 +18,14 @@ import { ResetPasswordUseCase } from './application/use-cases/reset-password.use
 import { ConfirmResetPasswordUseCase } from './application/use-cases/confirm-reset-password.use-case';
 import { RegisterCustomerUseCase } from './application/use-cases/register-customer.use-case';
 import { GetMeUseCase } from './application/use-cases/get-me.use-case';
-import { ResponseDefaultDTO } from '../../shared/shared.dtos';
+import { ResponseDefaultDTO } from '@shared/dtos';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { UseGuards } from '@nestjs/common';
-import { AuthLoginRequired } from './guards/auth.guard';
-import { CurrentUser } from './decorators/current-user-decorator';
+import { AuthLoginRequiredGuard } from './guards/auth-login-required.guard';
+import {
+  CurrentUser,
+  type JwtUserPayload,
+} from './decorators/current-user.decorator';
 
 const REFRESH_TOKEN_COOKIE = 'refreshToken';
 const REFRESH_TOKEN_COOKIE_OPTIONS = {
@@ -42,11 +46,13 @@ export class AuthController {
     private readonly getMeUseCase: GetMeUseCase,
   ) {}
 
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('/register')
   async register(@Body() req: RegisterRequestDTO): Promise<ResponseDefaultDTO> {
     return await this.registerCustomerUseCase.execute(req);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('/login')
   async login(
     @Body() req: AuthLoginRequestDTO,
@@ -66,11 +72,12 @@ export class AuthController {
     };
   }
 
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @Post('/refresh')
   async refresh(@Req() req: Request): Promise<RefreshTokenResponseDTO> {
-    return await this.refreshTokenUseCase.execute({
-      refreshToken: req.cookies.refreshToken as string,
-    });
+    return await this.refreshTokenUseCase.execute(
+      req.cookies.refreshToken as string | undefined,
+    );
   }
 
   @Post('/logout')
@@ -80,14 +87,13 @@ export class AuthController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthLoginRequired)
+  @UseGuards(AuthLoginRequiredGuard)
   @Get('/me')
-  async me(
-    @CurrentUser() currentUser: { email: string },
-  ): Promise<MeResponseDTO> {
+  async me(@CurrentUser() currentUser: JwtUserPayload): Promise<MeResponseDTO> {
     return await this.getMeUseCase.execute(currentUser.email);
   }
 
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Post('/reset-password')
   async resetPassword(
     @Body() req: ResetPasswordRequestDTO,
@@ -95,6 +101,7 @@ export class AuthController {
     return await this.resetPasswordUseCase.execute(req);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('/confirm-reset-password')
   async confirmResetPassword(
     @Body() req: ConfirmResetPasswordRequestDTO,

@@ -10,35 +10,34 @@ import {
 
 export class AuthLoginRequestDTO {
   @ApiProperty()
-  @IsString()
+  @IsEmail()
   @IsNotEmpty()
+  @MaxLength(255)
   email!: string;
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(72)
   password!: string;
-}
-
-export class RefreshTokenRequestDTO {
-  @ApiProperty({ description: 'Refresh token' })
-  @IsString()
-  refreshToken!: string;
 }
 
 export class ResetPasswordRequestDTO {
   @ApiProperty({ description: 'Email usado para login' })
-  @IsString()
+  @IsEmail()
+  @MaxLength(255)
   email!: string;
 }
 
 export class ConfirmResetPasswordRequestDTO {
   @ApiProperty({ description: 'Token enviado por email' })
   @IsString()
+  @MaxLength(2048)
   token!: string;
 
   @ApiProperty({ description: 'Email' })
-  @IsString()
+  @IsEmail()
+  @MaxLength(255)
   email!: string;
 
   @ApiProperty({ description: 'Nova senha', minLength: 8, maxLength: 20 })
@@ -55,15 +54,18 @@ export class ConfirmResetPasswordRequestDTO {
 export class RegisterRequestDTO {
   @ApiProperty({ description: 'Nome completo' })
   @IsString()
+  @MaxLength(255)
   @Matches(/^[A-Za-zÀ-ÿ\s]+$/)
   name!: string;
 
   @ApiProperty({ description: 'Endereço de email válido' })
   @IsEmail()
+  @MaxLength(255)
   email!: string;
 
   @ApiProperty({ description: 'Número de phone válido' })
   @IsString()
+  @MaxLength(32)
   phone!: string;
 
   @ApiProperty({

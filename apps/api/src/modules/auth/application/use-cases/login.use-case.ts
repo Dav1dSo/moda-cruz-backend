@@ -1,30 +1,33 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AuthLoginRequestDTO } from '../../dtos/request/auth-request';
-import { RequiredLoginResponseDTO } from '../../dtos/response/auth-response';
+import { LoginWithRefreshTokenResponseDTO } from '../../dtos/response/auth-response';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { AuthRepository } from '../../infrastructure/repositories/auth.repository';
+import { passwordHashProof } from '../password-hash-proof';
 
-/**
- * Hash bcrypt fixo (sem senha real associada), usado apenas para igualar o
- * tempo de resposta do login quando o usuário não existe/está inativo,
- * evitando enumeração de emails por timing attack.
- */
-const DUMMY_PASSWORD_HASH =
+const TIMING_EQUALIZATION_DUMMY_PASSWORD_HASH =
   '$2b$12$XdQhqfqJ8VzTM7QuUHmXZ.YzePyHGc/FyC.2rBf4Ni8UTnsYgRs0q';
 
 @Injectable()
 export class LoginUseCase {
   constructor(
-    private readonly userRepository: AuthRepository,
+    private readonly authRepository: AuthRepository,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
-  async execute(req: AuthLoginRequestDTO): Promise<RequiredLoginResponseDTO> {
-    const user = await this.userRepository.getUserByEmail(req.email);
+  async execute(
+    req: AuthLoginRequestDTO,
+  ): Promise<LoginWithRefreshTokenResponseDTO> {
+    const user = await this.authRepository.getUserByEmail(req.email);
 
     if (!user || user.deleted_at != null || !user.is_active) {
-      await bcrypt.compare(req.password, DUMMY_PASSWORD_HASH);
+      await bcrypt.compare(
+        req.password,
+        TIMING_EQUALIZATION_DUMMY_PASSWORD_HASH,
+      );
 
       throw new UnauthorizedException('Credenciais inválidas!');
     }
@@ -56,7 +59,7 @@ export class LoginUseCase {
         is_platform_admin: user.is_platform_admin,
       },
       {
-        secret: process.env.JWT_SECRET,
+        secret: this.configService.get<string>('JWT_SECRET'),
         expiresIn: '15m',
       },
     );
@@ -64,17 +67,16 @@ export class LoginUseCase {
     const refreshToken = await this.jwtService.signAsync(
       {
         sub: user.id,
-        email: user.email,
-        permissions,
-        is_platform_admin: user.is_platform_admin,
+        type: 'refresh',
+        pwd: passwordHashProof(user.password_hash),
       },
       {
-        secret: process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
         expiresIn: '7d',
       },
     );
 
-    await this.userRepository.updateLastLogin(user.id);
+    await this.authRepository.updateLastLogin(user.id);
 
     return {
       accessToken,

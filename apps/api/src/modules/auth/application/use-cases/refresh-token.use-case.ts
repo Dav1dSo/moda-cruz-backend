@@ -1,25 +1,28 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { RefreshTokenRequestDTO } from '../../dtos/request/auth-request';
 import { RefreshTokenResponseDTO } from '../../dtos/response/auth-response';
 import { AuthRepository } from '../../infrastructure/repositories/auth.repository';
+import { passwordHashProofMatches } from '../password-hash-proof';
 
 interface RefreshTokenPayload {
   sub: number;
   type?: string;
+  pwd?: string;
 }
 
 @Injectable()
 export class RefreshTokenUseCase {
   constructor(
     private readonly jwtService: JwtService,
-    private readonly userRepository: AuthRepository,
+    private readonly authRepository: AuthRepository,
+    private readonly configService: ConfigService,
   ) {}
 
   async execute(
-    request: RefreshTokenRequestDTO,
+    refreshToken: string | undefined,
   ): Promise<RefreshTokenResponseDTO> {
-    if (!request.refreshToken) {
+    if (!refreshToken) {
       throw new UnauthorizedException('Refresh token não encontrado');
     }
 
@@ -27,24 +30,26 @@ export class RefreshTokenUseCase {
 
     try {
       payload = await this.jwtService.verifyAsync<RefreshTokenPayload>(
-        request.refreshToken,
+        refreshToken,
         {
-          secret: process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
+          secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
         },
       );
     } catch {
       throw new UnauthorizedException('Refresh token inválido');
     }
 
-    if (!payload.sub) {
+    if (!payload.sub || payload.type !== 'refresh') {
       throw new UnauthorizedException('Refresh token inválido');
     }
 
-    const user = await this.userRepository.findUserWithPermissionsById(
-      payload.sub,
-    );
+    const user = await this.authRepository.findForRefreshById(payload.sub);
 
     if (!user || user.deleted_at != null || !user.is_active) {
+      throw new UnauthorizedException('Refresh token inválido');
+    }
+
+    if (!passwordHashProofMatches(payload.pwd, user.password_hash)) {
       throw new UnauthorizedException('Refresh token inválido');
     }
 
@@ -66,7 +71,7 @@ export class RefreshTokenUseCase {
         is_platform_admin: user.is_platform_admin,
       },
       {
-        secret: process.env.JWT_SECRET,
+        secret: this.configService.get<string>('JWT_SECRET'),
         expiresIn: '15m',
       },
     );

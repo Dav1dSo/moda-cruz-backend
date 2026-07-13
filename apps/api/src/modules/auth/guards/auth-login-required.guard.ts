@@ -7,17 +7,10 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-
-interface JwtUserPayload {
-  sub: number;
-  email: string;
-  permissions?: string[];
-  is_platform_admin?: boolean;
-  type?: string;
-}
+import type { JwtUserPayload } from '../decorators/current-user.decorator';
 
 @Injectable()
-export class AuthLoginRequired implements CanActivate {
+export class AuthLoginRequiredGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
     private readonly reflector: Reflector,

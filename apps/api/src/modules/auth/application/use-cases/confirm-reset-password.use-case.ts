@@ -1,29 +1,28 @@
-import {
-  BadRequestException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { ResponseDefaultDTO } from '../../../../shared/shared.dtos';
+import { ResponseDefaultDTO } from '@shared/dtos';
 import { ConfirmResetPasswordRequestDTO } from '../../dtos/request/auth-request';
 import { AuthRepository } from '../../infrastructure/repositories/auth.repository';
+import { passwordHashProofMatches } from '../password-hash-proof';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class ConfirmResetPasswordUseCase {
   constructor(
     private readonly jwtService: JwtService,
-    private readonly userRepository: AuthRepository,
+    private readonly authRepository: AuthRepository,
+    private readonly configService: ConfigService,
   ) {}
 
   async execute(
     req: ConfirmResetPasswordRequestDTO,
   ): Promise<ResponseDefaultDTO> {
-    let payload: { sub: number; type: string };
+    let payload: { sub: number; type: string; pwd?: string };
 
     try {
       payload = this.jwtService.verify(req.token, {
-        secret: process.env.JWT_RESET_PASSWORD_SECRET,
+        secret: this.configService.get<string>('JWT_RESET_PASSWORD_SECRET'),
       });
     } catch {
       throw new UnauthorizedException(
@@ -35,18 +34,26 @@ export class ConfirmResetPasswordUseCase {
       throw new UnauthorizedException('Token inválido');
     }
 
-    const user = await this.userRepository.findByIdAndEmail(
+    const user = await this.authRepository.findPasswordHashByIdAndEmail(
       payload.sub,
       req.email,
     );
 
-    if (!user) {
-      throw new BadRequestException('Não foi possível executar ação.');
+    if (!user || user.deleted_at != null || !user.is_active) {
+      throw new UnauthorizedException(
+        'Solicite um novo email e tente novamente.',
+      );
+    }
+
+    if (!passwordHashProofMatches(payload.pwd, user.password_hash)) {
+      throw new UnauthorizedException(
+        'Solicite um novo email e tente novamente.',
+      );
     }
 
     const hashedPassword = await bcrypt.hash(req.new_password, 12);
 
-    await this.userRepository.updatePassword(user.id, hashedPassword);
+    await this.authRepository.updatePassword(user.id, hashedPassword);
 
     return {
       message: 'Senha atualizada com sucesso',

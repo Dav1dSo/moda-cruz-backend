@@ -4,7 +4,7 @@ import { MeResponseDTO } from '../../dtos/response/auth-response';
 
 @Injectable()
 export class GetMeUseCase {
-  constructor(private readonly userRepository: AuthRepository) {}
+  constructor(private readonly authRepository: AuthRepository) {}
 
   async execute(email: string): Promise<MeResponseDTO> {
     if (!email) {
@@ -12,7 +12,7 @@ export class GetMeUseCase {
     }
 
     const user =
-      await this.userRepository.findUserWithPermissionsByEmail(email);
+      await this.authRepository.findUserWithPermissionsByEmail(email);
 
     if (!user || user.deleted_at != null || !user.is_active) {
       throw new UnauthorizedException('Usuário inválido');

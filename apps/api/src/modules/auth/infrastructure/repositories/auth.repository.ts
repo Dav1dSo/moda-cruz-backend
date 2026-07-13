@@ -1,53 +1,46 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@app/database';
+import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { RegisterRequestDTO } from '../../dtos/request/auth-request';
 
-@Injectable()
-export class AuthRepository {
-  constructor(private readonly db: PrismaService) {}
-
-  /**
-   * Select comum de usuário + perfis + permissões, usado pelas variantes de
-   * busca de usuário para autenticação. Nunca inclui `password_hash` — a
-   * única variante que precisa do hash (`getUserByEmail`) o adiciona
-   * explicitamente por cima deste select base.
-   */
-  private get userWithPermissionsSelect() {
-    return {
-      id: true,
-      name: true,
-      email: true,
-      is_platform_admin: true,
-      deleted_at: true,
-      is_active: true,
-      profiles: {
+const USER_WITH_PERMISSIONS_SELECT = {
+  id: true,
+  name: true,
+  email: true,
+  is_platform_admin: true,
+  deleted_at: true,
+  is_active: true,
+  profiles: {
+    select: {
+      profile: {
         select: {
-          profile: {
+          id: true,
+          name: true,
+          permissions: {
             select: {
-              id: true,
-              name: true,
-              permissions: {
+              permission: {
                 select: {
-                  permission: {
-                    select: {
-                      key: true,
-                    },
-                  },
+                  key: true,
                 },
               },
             },
           },
         },
       },
-    } as const;
-  }
+    },
+  },
+} as const satisfies Prisma.UserSelect;
+
+@Injectable()
+export class AuthRepository {
+  constructor(private readonly db: PrismaService) {}
 
   async getUserByEmail(email: string) {
     return await this.db.user.findFirst({
       where: { email },
       select: {
-        ...this.userWithPermissionsSelect,
+        ...USER_WITH_PERMISSIONS_SELECT,
         password_hash: true,
       },
     });
@@ -56,14 +49,7 @@ export class AuthRepository {
   async findUserWithPermissionsByEmail(email: string) {
     return await this.db.user.findFirst({
       where: { email },
-      select: this.userWithPermissionsSelect,
-    });
-  }
-
-  async findUserWithPermissionsById(id: number) {
-    return await this.db.user.findFirst({
-      where: { id },
-      select: this.userWithPermissionsSelect,
+      select: USER_WITH_PERMISSIONS_SELECT,
     });
   }
 
@@ -81,10 +67,39 @@ export class AuthRepository {
     });
   }
 
-  async findByIdAndEmail(id: number, email: string) {
+  async findForPasswordResetByEmail(email: string) {
+    return await this.db.user.findFirst({
+      where: { email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        password_hash: true,
+        is_active: true,
+        deleted_at: true,
+      },
+    });
+  }
+
+  async findPasswordHashByIdAndEmail(id: number, email: string) {
     return await this.db.user.findFirst({
       where: { id, email },
-      select: { id: true, email: true },
+      select: {
+        id: true,
+        password_hash: true,
+        is_active: true,
+        deleted_at: true,
+      },
+    });
+  }
+
+  async findForRefreshById(id: number) {
+    return await this.db.user.findFirst({
+      where: { id },
+      select: {
+        ...USER_WITH_PERMISSIONS_SELECT,
+        password_hash: true,
+      },
     });
   }
 

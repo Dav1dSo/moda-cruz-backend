@@ -9,12 +9,13 @@ import { ResetPasswordUseCase } from './application/use-cases/reset-password.use
 import { ConfirmResetPasswordUseCase } from './application/use-cases/confirm-reset-password.use-case';
 import { RegisterCustomerUseCase } from './application/use-cases/register-customer.use-case';
 import { GetMeUseCase } from './application/use-cases/get-me.use-case';
-import { AuthLoginRequired } from './guards/auth.guard';
+import { AuthLoginRequiredGuard } from './guards/auth-login-required.guard';
 import { AuthRepository } from './infrastructure/repositories/auth.repository';
 import {
   NOTIFICATIONS_CLIENT,
+  NOTIFICATIONS_QUEUE_ARGUMENTS,
   NOTIFICATIONS_QUEUE,
-} from '@contracts/auth/reset-password-requested.event';
+} from '@contracts/notifications';
 
 @Module({
   imports: [
@@ -23,20 +24,26 @@ import {
         name: NOTIFICATIONS_CLIENT,
         imports: [ConfigModule],
         inject: [ConfigService],
-        useFactory: (configService: ConfigService) => ({
-          transport: Transport.RMQ,
-          options: {
-            urls: [
-              configService.get<string>('RABBITMQ_URL') ??
-                'amqp://admin:admin123@localhost:5672',
-            ],
-            queue: NOTIFICATIONS_QUEUE,
-            queueOptions: {
-              durable: true,
+        useFactory: (configService: ConfigService) => {
+          const rabbitmqUrl = configService.get<string>('RABBITMQ_URL');
+
+          if (!rabbitmqUrl) {
+            throw new Error('RABBITMQ_URL não configurado');
+          }
+
+          return {
+            transport: Transport.RMQ,
+            options: {
+              urls: [rabbitmqUrl],
+              queue: NOTIFICATIONS_QUEUE,
+              queueOptions: {
+                durable: true,
+                arguments: NOTIFICATIONS_QUEUE_ARGUMENTS,
+              },
+              persistent: true,
             },
-            persistent: true,
-          },
-        }),
+          };
+        },
       },
     ]),
     JwtModule.registerAsync({
@@ -57,6 +64,12 @@ import {
           throw new Error('JWT_RESET_PASSWORD_SECRET não configurado');
         }
 
+        const refreshSecret = configService.get<string>('JWT_REFRESH_SECRET');
+
+        if (!refreshSecret) {
+          throw new Error('JWT_REFRESH_SECRET não configurado');
+        }
+
         return {
           secret,
           signOptions: {
@@ -74,9 +87,9 @@ import {
     ConfirmResetPasswordUseCase,
     RegisterCustomerUseCase,
     GetMeUseCase,
-    AuthLoginRequired,
+    AuthLoginRequiredGuard,
     AuthRepository,
   ],
-  exports: [JwtModule, AuthLoginRequired],
+  exports: [JwtModule, AuthLoginRequiredGuard],
 })
 export class AuthModule {}
