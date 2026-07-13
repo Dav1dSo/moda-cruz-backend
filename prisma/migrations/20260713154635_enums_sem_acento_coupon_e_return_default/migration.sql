@@ -1,0 +1,7 @@
+ALTER TYPE "order_status" RENAME VALUE 'EM_PREPARAÇÃO' TO 'EM_PREPARACAO';
+
+ALTER TYPE "payment_method" RENAME VALUE 'CARTÃO' TO 'CARTAO';
+
+ALTER TABLE "coupons" DROP COLUMN "status";
+
+ALTER TABLE "return_requests" ALTER COLUMN "status" SET DEFAULT 'SOLICITADO';

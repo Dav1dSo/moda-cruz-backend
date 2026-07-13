@@ -33,7 +33,7 @@ enum ProductStatus {
 enum OrderStatus {
   PENDENTE
   EM_PROCESSAMENTO
-  EM_PREPARAÇÃO
+  EM_PREPARACAO
   ENVIADO
   CANCELADO
   ENTREGUE
@@ -51,7 +51,7 @@ enum PaymentStatus {
 
 enum PaymentMethod {
   PIX
-  CARTÃO
+  CARTAO
   BOLETO
 
   @@map("payment_method")
@@ -506,7 +506,7 @@ model ReturnRequest {
   requested_by_user_id Int?
   reviewed_by_user_id  Int?
   reason               String       @db.Text
-  status               ReturnStatus @default(RECEBIDO)
+  status               ReturnStatus @default(SOLICITADO)
   requested_at         DateTime     @default(now())
   reviewed_at          DateTime?
   created_at           DateTime     @default(now())
@@ -569,7 +569,6 @@ model Coupon {
   per_customer_limit Int?
   starts_at          DateTime?
   ends_at            DateTime?
-  status             String    @db.VarChar(32)
   is_active          Boolean   @default(true)
   created_at         DateTime  @default(now())
   updated_at         DateTime  @updatedAt
