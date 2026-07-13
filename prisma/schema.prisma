@@ -246,12 +246,13 @@ model Product {
   id           Int           @id @default(autoincrement())
   category_id  Int
   name         String        @db.VarChar(255)
+  slug         String        @unique @db.VarChar(160)
   description  String?       @db.VarChar(255)
   price        Decimal       @db.Decimal(12, 2)
   cost_price   Decimal?      @db.Decimal(12, 2)
   rating       Float         @default(0)
   review_count Int           @default(0)
-  status       ProductStatus @default(PUBLICADO)
+  status       ProductStatus @default(RASCUNHO)
   created_at   DateTime      @default(now())
   updated_at   DateTime      @updatedAt
   updated_by   Int
@@ -331,7 +332,7 @@ model ProductReview {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  product  Product   @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  product  Product   @relation(fields: [product_id], references: [id], onDelete: Restrict)
   customer Customer? @relation(fields: [customer_id], references: [id], onDelete: SetNull)
 
   @@index([product_id])
@@ -435,7 +436,7 @@ model OrderItem {
 
   order        Order               @relation(fields: [order_id], references: [id], onDelete: Cascade)
   product      Product             @relation(fields: [product_id], references: [id], onDelete: Restrict)
-  variant      ProductVariant?     @relation(fields: [product_variant_id], references: [id], onDelete: SetNull)
+  variant      ProductVariant?     @relation(fields: [product_variant_id], references: [id], onDelete: Restrict)
   return_items ReturnRequestItem[]
 
   @@index([order_id])
@@ -532,7 +533,7 @@ model ReturnRequestItem {
 
   return_request ReturnRequest @relation(fields: [return_request_id], references: [id], onDelete: Cascade)
   order_item     OrderItem?    @relation(fields: [order_item_id], references: [id], onDelete: SetNull)
-  product        Product?      @relation(fields: [product_id], references: [id], onDelete: SetNull)
+  product        Product?      @relation(fields: [product_id], references: [id], onDelete: Restrict)
 
   @@index([return_request_id])
   @@index([order_item_id])
