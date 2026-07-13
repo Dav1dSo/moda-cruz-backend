@@ -1,5 +1,3 @@
-export const NOTIFICATIONS_CLIENT = 'NOTIFICATIONS_CLIENT';
-export const NOTIFICATIONS_QUEUE = 'notifications_queue';
 export const RESET_PASSWORD_REQUESTED_EVENT = 'auth.reset-password.requested';
 
 export interface ResetPasswordRequestedEvent {
