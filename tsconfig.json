@@ -22,9 +22,18 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@app/database": ["libs/database/src"],
-      "@app/database/*": ["libs/database/src/*"],
-      "@contracts/*": ["libs/contracts/src/*"]
+      "@app/database": [
+        "libs/database/src"
+      ],
+      "@app/database/*": [
+        "libs/database/src/*"
+      ],
+      "@contracts/*": [
+        "libs/contracts/src/*"
+      ],
+      "@shared/*": [
+        "apps/api/src/shared/*"
+      ]
     }
   }
 }
