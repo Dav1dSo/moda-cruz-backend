@@ -8,7 +8,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { PaginationRequestDTO } from 'apps/api/src/shared/shared.dtos';
+import { PaginationRequestDTO } from '@shared/dtos';
 
 export class CreateProfileRequestDTO {
   @ApiProperty({

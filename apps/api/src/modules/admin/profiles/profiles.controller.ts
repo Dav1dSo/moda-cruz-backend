@@ -18,15 +18,15 @@ import {
 import { CreateProfileUseCase } from './application/use-cases/create-profile.use-case';
 import { GetAllProfilesResponseDTO } from './dtos/response/profile-response';
 import { GetAllProfilesUseCase } from './application/use-cases/get-all-profiles.use-case';
-import { AuthLoginRequired } from '../../auth/guards/auth.guard';
+import { AuthLoginRequiredGuard } from '../../auth/guards/auth-login-required.guard';
 import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
-import { Permissions } from '../../auth/decorators/permissions-decorator';
+import { Permissions } from '../../auth/decorators/permissions.decorator';
 import { DeleteProfileUseCase } from './application/use-cases/delete-profile.use-case';
-import { ResponseDefaultDTO } from '../../../shared/shared.dtos';
+import { ResponseDefaultDTO } from '@shared/dtos';
 import { UpdateProfileUseCase } from './application/use-cases/update-profile.use-case';
 
-@Controller('profile')
-export class ProfileController {
+@Controller('profiles')
+export class ProfilesController {
   constructor(
     private readonly createProfileUseCase: CreateProfileUseCase,
     private readonly getAllProfilesUseCase: GetAllProfilesUseCase,
@@ -35,7 +35,7 @@ export class ProfileController {
   ) {}
 
   @ApiBearerAuth()
-  @UseGuards(AuthLoginRequired)
+  @UseGuards(AuthLoginRequiredGuard)
   @Permissions('profile.create')
   @Post()
   async create(
@@ -45,7 +45,7 @@ export class ProfileController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthLoginRequired)
+  @UseGuards(AuthLoginRequiredGuard)
   @Permissions('profile.read')
   @Get()
   async findAll(
@@ -55,7 +55,7 @@ export class ProfileController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthLoginRequired)
+  @UseGuards(AuthLoginRequiredGuard)
   @Permissions('profile.delete')
   @ApiParam({
     name: 'id',
@@ -71,7 +71,7 @@ export class ProfileController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthLoginRequired)
+  @UseGuards(AuthLoginRequiredGuard)
   @Permissions('profile.update')
   @ApiParam({
     name: 'id',

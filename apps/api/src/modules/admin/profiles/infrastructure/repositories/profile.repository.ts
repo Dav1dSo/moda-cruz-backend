@@ -5,7 +5,7 @@ import {
   GetAllProfilesRequestDTO,
   UpdateProfileRequestDTO,
 } from '../../dtos/request/profile-request';
-import { isPrismaNotFoundError } from 'apps/api/src/shared/utils/prisma-errors';
+import { isPrismaNotFoundError } from '@shared/utils/prisma-errors';
 
 @Injectable()
 export class ProfileRepository {
@@ -23,6 +23,13 @@ export class ProfileRepository {
 
   async findById(id: number) {
     return await this.db.profile.findUnique({ where: { id } });
+  }
+
+  async findExistingPermissionIds(ids: number[]) {
+    return await this.db.permission.findMany({
+      where: { id: { in: ids } },
+      select: { id: true },
+    });
   }
 
   async create(req: CreateProfileRequestDTO) {

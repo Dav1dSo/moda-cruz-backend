@@ -4,17 +4,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ResponseDefaultDTO } from 'apps/api/src/shared/shared.dtos';
+import { ResponseDefaultDTO } from '@shared/dtos';
+import { isPrismaForeignKeyConstraintError } from '@shared/utils/prisma-errors';
 import { UpdateProfileRequestDTO } from '../../dtos/request/profile-request';
 import { ProfileRepository } from '../../infrastructure/repositories/profile.repository';
-import { PermissionRepository } from '../../../permissions/infrastructure/repositories/permission.repository';
 
 @Injectable()
 export class UpdateProfileUseCase {
-  constructor(
-    private readonly profileRepository: ProfileRepository,
-    private readonly permissionRepository: PermissionRepository,
-  ) {}
+  constructor(private readonly profileRepository: ProfileRepository) {}
 
   async execute(
     id: number,
@@ -41,21 +38,35 @@ export class UpdateProfileUseCase {
 
     if (req.permission_ids !== undefined) {
       uniquePermissionIds = [...new Set(req.permission_ids)];
-      const foundPermissionsCount =
-        await this.permissionRepository.countByIds(uniquePermissionIds);
+      const existingPermissions =
+        await this.profileRepository.findExistingPermissionIds(
+          uniquePermissionIds,
+        );
 
-      if (foundPermissionsCount < uniquePermissionIds.length) {
-        throw new BadRequestException('IDs de permissão inválidos.');
+      if (existingPermissions.length < uniquePermissionIds.length) {
+        throw new BadRequestException(
+          'Uma ou mais permissões informadas não existem.',
+        );
       }
     }
 
-    await this.profileRepository.update(id, {
-      ...(req.name && { name: req.name }),
-      ...(req.is_active !== undefined && { is_active: req.is_active }),
-      ...(uniquePermissionIds !== undefined && {
-        permission_ids: uniquePermissionIds,
-      }),
-    });
+    try {
+      await this.profileRepository.update(id, {
+        ...(req.name && { name: req.name }),
+        ...(req.is_active !== undefined && { is_active: req.is_active }),
+        ...(uniquePermissionIds !== undefined && {
+          permission_ids: uniquePermissionIds,
+        }),
+      });
+    } catch (error) {
+      if (isPrismaForeignKeyConstraintError(error)) {
+        throw new BadRequestException(
+          'Uma ou mais permissões informadas não existem.',
+        );
+      }
+
+      throw error;
+    }
 
     return { message: 'Perfil atualizado com sucesso' };
   }
