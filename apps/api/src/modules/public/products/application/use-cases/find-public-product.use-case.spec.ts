@@ -44,7 +44,6 @@ describe('FindPublicProductUseCase', () => {
       },
     ],
     sku: 'TERNO-AZUL-P',
-    cost_price: new Prisma.Decimal('400.00'),
     status: 'PUBLICADO',
     updated_by: 7,
   };
@@ -59,7 +58,7 @@ describe('FindPublicProductUseCase', () => {
     );
   });
 
-  it('retorna o produto mapeado, sem sku/cost_price/status/updated_by, quando encontrado', async () => {
+  it('retorna o produto mapeado, sem sku/status/updated_by, quando encontrado', async () => {
     publicProductRepository.findBySlug.mockResolvedValue(
       productWithSensitiveFields,
     );
@@ -100,7 +99,7 @@ describe('FindPublicProductUseCase', () => {
     });
   });
 
-  it('nunca expõe sku, cost_price, status ou updated_by no objeto de resposta', async () => {
+  it('nunca expõe sku, status ou updated_by no objeto de resposta', async () => {
     publicProductRepository.findBySlug.mockResolvedValue(
       productWithSensitiveFields,
     );
@@ -110,7 +109,6 @@ describe('FindPublicProductUseCase', () => {
     const resultKeys = Object.keys(result);
 
     expect(resultKeys).not.toContain('sku');
-    expect(resultKeys).not.toContain('cost_price');
     expect(resultKeys).not.toContain('status');
     expect(resultKeys).not.toContain('updated_by');
   });

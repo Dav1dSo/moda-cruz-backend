@@ -21,7 +21,6 @@ describe('FindProductUseCase', () => {
     slug: 'camiseta-basica',
     description: 'Camiseta de algodão',
     price: decimal(99.9),
-    cost_price: decimal(45.5),
     status: ProductStatus.PUBLICADO,
     rating: 4.5,
     review_count: 12,
@@ -64,42 +63,15 @@ describe('FindProductUseCase', () => {
   it('lança NotFoundException quando o produto não existe', async () => {
     productRepository.findById.mockResolvedValue(null);
 
-    await expect(useCase.execute(productId, true)).rejects.toThrow(
+    await expect(useCase.execute(productId)).rejects.toThrow(
       NotFoundException,
     );
-  });
-
-  it('inclui cost_price quando canReadCost é true', async () => {
-    productRepository.findById.mockResolvedValue(fullProduct as never);
-
-    const result = await useCase.execute(productId, true);
-
-    expect(result?.cost_price).toBe(45.5);
-  });
-
-  it('retorna cost_price null quando canReadCost é false, mesmo que o produto tenha custo cadastrado', async () => {
-    productRepository.findById.mockResolvedValue(fullProduct as never);
-
-    const result = await useCase.execute(productId, false);
-
-    expect(result?.cost_price).toBeNull();
-  });
-
-  it('retorna cost_price null quando canReadCost é true mas o produto não tem custo cadastrado', async () => {
-    productRepository.findById.mockResolvedValue({
-      ...fullProduct,
-      cost_price: null,
-    } as never);
-
-    const result = await useCase.execute(productId, true);
-
-    expect(result?.cost_price).toBeNull();
   });
 
   it('mapeia todos os campos do produto, calcula o estoque total e formata as datas em ISO', async () => {
     productRepository.findById.mockResolvedValue(fullProduct as never);
 
-    const result = await useCase.execute(productId, true);
+    const result = await useCase.execute(productId);
 
     expect(result).toEqual({
       id: productId,
@@ -108,7 +80,6 @@ describe('FindProductUseCase', () => {
       description: 'Camiseta de algodão',
       category: { id: 1, name: 'Camisetas' },
       price: 99.9,
-      cost_price: 45.5,
       status: ProductStatus.PUBLICADO,
       rating: 4.5,
       review_count: 12,
@@ -145,7 +116,7 @@ describe('FindProductUseCase', () => {
       description: null,
     } as never);
 
-    const result = await useCase.execute(productId, true);
+    const result = await useCase.execute(productId);
 
     expect(result?.description).toBeNull();
   });
@@ -153,7 +124,7 @@ describe('FindProductUseCase', () => {
   it('não inclui campos sensíveis fora do contrato de resposta (apenas os campos mapeados explicitamente)', async () => {
     productRepository.findById.mockResolvedValue(fullProduct as never);
 
-    const result = await useCase.execute(productId, true);
+    const result = await useCase.execute(productId);
 
     expect(Object.keys(result ?? {}).sort()).toEqual(
       [
@@ -163,7 +134,6 @@ describe('FindProductUseCase', () => {
         'description',
         'category',
         'price',
-        'cost_price',
         'status',
         'rating',
         'review_count',

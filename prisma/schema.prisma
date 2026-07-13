@@ -249,7 +249,6 @@ model Product {
   slug         String        @unique @db.VarChar(160)
   description  String?       @db.VarChar(255)
   price        Decimal       @db.Decimal(12, 2)
-  cost_price   Decimal?      @db.Decimal(12, 2)
   rating       Float         @default(0)
   review_count Int           @default(0)
   status       ProductStatus @default(RASCUNHO)

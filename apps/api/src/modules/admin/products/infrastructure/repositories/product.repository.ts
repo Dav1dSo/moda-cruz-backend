@@ -195,7 +195,6 @@ export class ProductRepository {
         slug: true,
         description: true,
         price: true,
-        cost_price: true,
         status: true,
         rating: true,
         review_count: true,

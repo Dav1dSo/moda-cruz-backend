@@ -6,10 +6,7 @@ import { GetProductResponseDTO } from '../../dtos/response/product-response';
 export class FindProductUseCase {
   constructor(private readonly productRepository: ProductRepository) {}
 
-  async execute(
-    id: number,
-    canReadCost: boolean,
-  ): Promise<GetProductResponseDTO> {
+  async execute(id: number): Promise<GetProductResponseDTO> {
     const product = await this.productRepository.findById(id);
 
     if (!product) {
@@ -28,7 +25,6 @@ export class FindProductUseCase {
       description: product.description ?? null,
       category: { id: product.category.id, name: product.category.name },
       price: product.price.toNumber(),
-      cost_price: canReadCost ? (product.cost_price?.toNumber() ?? null) : null,
       status: product.status,
       rating: product.rating,
       review_count: product.review_count,

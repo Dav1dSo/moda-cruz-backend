@@ -76,13 +76,8 @@ export class ProductsController {
   @Get(':id')
   async findOne(
     @Param('id', ParseIntPipe) id: number,
-    @CurrentUser() currentUser: JwtUserPayload,
   ): Promise<GetProductResponseDTO> {
-    const canReadCost =
-      currentUser.is_platform_admin === true ||
-      (currentUser.permissions?.includes('product.read-cost') ?? false);
-
-    return await this.findProductUseCase.execute(id, canReadCost);
+    return await this.findProductUseCase.execute(id);
   }
 
   @ApiBearerAuth()

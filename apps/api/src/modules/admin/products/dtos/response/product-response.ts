@@ -105,12 +105,6 @@ export class GetProductResponseDTO {
   @ApiProperty()
   price!: number;
 
-  @ApiProperty({
-    required: false,
-    description: 'Preço de custo (uso interno, apenas para administradores)',
-  })
-  cost_price!: number | null;
-
   @ApiProperty({ enum: ProductStatus })
   status!: ProductStatus;
 
