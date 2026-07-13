@@ -22,7 +22,7 @@ describe('CreateUserUseCase', () => {
   let userRepository: jest.Mocked<
     Pick<
       UserRepository,
-      'getUserByEmail' | 'findExistingProfileIds' | 'createUser'
+      'getUserByEmail' | 'getUserByPhone' | 'findExistingProfileIds' | 'createUser'
     >
   >;
   let brokerClient: jest.Mocked<Pick<ClientProxy, 'emit'>>;
@@ -38,6 +38,7 @@ describe('CreateUserUseCase', () => {
   beforeEach(() => {
     userRepository = {
       getUserByEmail: jest.fn(),
+      getUserByPhone: jest.fn(),
       findExistingProfileIds: jest.fn(),
       createUser: jest.fn(),
     };
@@ -49,6 +50,7 @@ describe('CreateUserUseCase', () => {
     );
 
     userRepository.getUserByEmail.mockResolvedValue(null);
+    userRepository.getUserByPhone.mockResolvedValue(null);
     userRepository.findExistingProfileIds.mockResolvedValue([2, 1]);
   });
 
@@ -92,6 +94,32 @@ describe('CreateUserUseCase', () => {
 
     expect(userRepository.findExistingProfileIds).not.toHaveBeenCalled();
     expect(userRepository.createUser).not.toHaveBeenCalled();
+    expect(brokerClient.emit).not.toHaveBeenCalled();
+  });
+
+  it('lança ConflictException de telefone e não valida perfis, não persiste e não emite evento quando o telefone já existe', async () => {
+    userRepository.getUserByPhone.mockResolvedValue({ id: 77 });
+
+    const promise = useCase.execute(validRequest);
+
+    await expect(promise).rejects.toBeInstanceOf(ConflictException);
+    await expect(promise).rejects.toThrow('Telefone já cadastrado.');
+
+    expect(userRepository.findExistingProfileIds).not.toHaveBeenCalled();
+    expect(userRepository.createUser).not.toHaveBeenCalled();
+    expect(brokerClient.emit).not.toHaveBeenCalled();
+  });
+
+  it('lança ConflictException de telefone e não emite evento quando a escrita falha com P2002 no índice parcial de phone (corrida entre a checagem e o insert)', async () => {
+    userRepository.createUser.mockRejectedValue(
+      prismaError('P2002', { target: 'users_phone_key' }),
+    );
+
+    const promise = useCase.execute(validRequest);
+
+    await expect(promise).rejects.toBeInstanceOf(ConflictException);
+    await expect(promise).rejects.toThrow('Telefone já cadastrado.');
+
     expect(brokerClient.emit).not.toHaveBeenCalled();
   });
 

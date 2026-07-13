@@ -343,9 +343,9 @@ model Customer {
   user_id       Int?           @unique
   code          String         @unique @db.VarChar(32)
   name          String         @db.VarChar(255)
-  email         String?        @db.VarChar(255)
-  phone         String?        @db.VarChar(32)
-  document      String?        @db.VarChar(32)
+  email         String?        @unique @db.VarChar(255)
+  phone         String?        @unique @db.VarChar(32)
+  document      String?        @unique @db.VarChar(32)
   status        CustomerStatus @default(ATIVO)
   total_orders  Int            @default(0)
   total_spent   Decimal        @default(0.0) @db.Decimal(12, 2)

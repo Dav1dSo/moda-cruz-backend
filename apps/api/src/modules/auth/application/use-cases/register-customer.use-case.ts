@@ -3,7 +3,10 @@ import { ClientProxy } from '@nestjs/microservices';
 import { RegisterRequestDTO } from '../../dtos/request/auth-request';
 import { AuthRepository } from '../../infrastructure/repositories/auth.repository';
 import { ResponseDefaultDTO } from '@shared/dtos';
-import { isPrismaUniqueConstraintError } from '@shared/utils/prisma-errors';
+import {
+  isPrismaUniqueConstraintError,
+  uniqueConstraintCovers,
+} from '@shared/utils/prisma-errors';
 import { NOTIFICATIONS_CLIENT } from '@contracts/notifications';
 import { USER_CREATED_EVENT } from '@contracts/users/user-created.event';
 import type { UserCreatedEvent } from '@contracts/users/user-created.event';
@@ -27,6 +30,10 @@ export class RegisterCustomerUseCase {
       await this.authRepository.createCustomerUser(req);
     } catch (error) {
       if (isPrismaUniqueConstraintError(error)) {
+        if (uniqueConstraintCovers(error, 'phone')) {
+          throw new ConflictException('Telefone já cadastrado.');
+        }
+
         throw new ConflictException('Email já cadastrado.');
       }
 

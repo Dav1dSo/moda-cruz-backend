@@ -32,6 +32,12 @@ export class CreateUserUseCase {
       throw new ConflictException('Email já cadastrado.');
     }
 
+    const phoneOwner = await this.userRepository.getUserByPhone(req.phone);
+
+    if (phoneOwner) {
+      throw new ConflictException('Telefone já cadastrado.');
+    }
+
     const profileIds = Array.from(new Set(req.profile_ids));
 
     const existingProfileIds =
@@ -46,11 +52,14 @@ export class CreateUserUseCase {
     try {
       await this.userRepository.createUser(req, profileIds);
     } catch (error) {
-      if (
-        isPrismaUniqueConstraintError(error) &&
-        uniqueConstraintCovers(error, 'email')
-      ) {
-        throw new ConflictException('Email já cadastrado.');
+      if (isPrismaUniqueConstraintError(error)) {
+        if (uniqueConstraintCovers(error, 'email')) {
+          throw new ConflictException('Email já cadastrado.');
+        }
+
+        if (uniqueConstraintCovers(error, 'phone')) {
+          throw new ConflictException('Telefone já cadastrado.');
+        }
       }
 
       if (isPrismaForeignKeyConstraintError(error)) {

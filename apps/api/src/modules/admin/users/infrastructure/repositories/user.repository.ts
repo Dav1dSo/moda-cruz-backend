@@ -18,6 +18,13 @@ export class UserRepository {
     });
   }
 
+  async getUserByPhone(phone: string) {
+    return await this.db.user.findFirst({
+      where: { phone, deleted_at: null },
+      select: { id: true },
+    });
+  }
+
   async findByEmailOrPhoneExcludingId(
     id: number,
     email: string,
