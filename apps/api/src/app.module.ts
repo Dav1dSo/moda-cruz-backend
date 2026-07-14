@@ -9,6 +9,8 @@ import { ProfilesModule } from './modules/admin/profiles/profiles.module';
 import { PermissionsModule } from './modules/admin/permissions/permissions.module';
 import { ProductsModule } from './modules/admin/products/products.module';
 import { CategoriesModule } from './modules/admin/categories/categories.module';
+import { PromotionsModule } from './modules/admin/promotions/promotions.module';
+import { CouponsModule } from './modules/admin/coupons/coupons.module';
 import { PublicProductsModule } from './modules/public/products/products.module';
 import { PublicCategoriesModule } from './modules/public/categories/categories.module';
 
@@ -33,6 +35,8 @@ import { PublicCategoriesModule } from './modules/public/categories/categories.m
     PermissionsModule,
     ProductsModule,
     CategoriesModule,
+    PromotionsModule,
+    CouponsModule,
     PublicProductsModule,
     PublicCategoriesModule,
   ],
